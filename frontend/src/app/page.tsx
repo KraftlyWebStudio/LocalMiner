@@ -10,9 +10,11 @@ import Map from "@/components/ui/Map";
 import ResultsTable from "@/components/ui/ResultsTable";
 import SearchBar from "@/components/ui/SearchBar";
 import Toast from "@/components/ui/Toast";
+import { geocodeLocation } from "@/api/googlePlaces";
 import { useExport } from "@/hooks/useExport";
 import { useFilters } from "@/hooks/useFilters";
 import { usePlaces } from "@/hooks/usePlaces";
+import { DEFAULT_FILTERS } from "@/types/filters";
 import { Place } from "@/types/place";
 
 type GeolocationState = {
@@ -30,6 +32,9 @@ const ITEMS_PER_PAGE = 100;
 export default function Home() {
   const [location, setLocation] = useState<GeolocationState | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
+  const [locationLabel, setLocationLabel] = useState("Current location");
+  const [locationQuery, setLocationQuery] = useState("");
+  const [isResolvingLocation, setIsResolvingLocation] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -52,6 +57,7 @@ export default function Home() {
           lat: position.coords.latitude,
           lng: position.coords.longitude,
         });
+        setLocationLabel("Current location");
         setLocationError(null);
       },
       () => {
@@ -66,12 +72,6 @@ export default function Home() {
     );
   }, []);
 
-  const { places, isLoading, errorMessage, refetch } = usePlaces({
-    latitude: location?.lat ?? null,
-    longitude: location?.lng ?? null,
-    query: searchQuery,
-  });
-
   const {
     filters,
     setMinRating,
@@ -85,6 +85,13 @@ export default function Home() {
     activeFilterCount,
     applyFilters,
   } = useFilters();
+
+  const { places, isLoading, errorMessage, refetch } = usePlaces({
+    latitude: location?.lat ?? null,
+    longitude: location?.lng ?? null,
+    query: searchQuery,
+    radius: filters.radius,
+  });
 
   const filteredPlaces = useMemo(() => applyFilters(places), [applyFilters, places]);
 
@@ -148,6 +155,31 @@ export default function Home() {
     setCurrentPage(1);
   }, []);
 
+  const handleLocationApply = useCallback(async () => {
+    const trimmedLocation = locationQuery.trim();
+    if (!trimmedLocation) {
+      setUiToast({ message: "✗ Enter a city, state, or country first", type: "error" });
+      return;
+    }
+
+    setIsResolvingLocation(true);
+    try {
+      const resolvedLocation = await geocodeLocation(trimmedLocation);
+      setLocation({ lat: resolvedLocation.lat, lng: resolvedLocation.lng });
+      setLocationLabel(resolvedLocation.label);
+      setSelectedPlaceId(null);
+      setCurrentPage(1);
+      setUiToast({ message: `✓ Location changed to ${resolvedLocation.label}`, type: "success" });
+    } catch (error) {
+      setUiToast({
+        message: error instanceof Error ? error.message : "✗ Could not change location",
+        type: "error",
+      });
+    } finally {
+      setIsResolvingLocation(false);
+    }
+  }, [locationQuery]);
+
   const handlePlaceSelect = useCallback((place: Place) => {
     setSelectedPlaceId(place.placeId);
   }, []);
@@ -163,6 +195,7 @@ export default function Home() {
   const handleRadiusChange = useCallback(
     (meters: number) => {
       setRadius(meters);
+      setCurrentPage(1);
       refetch();
     },
     [refetch, setRadius],
@@ -196,11 +229,11 @@ export default function Home() {
       chips.push({ key: "has-website", label: "Has Website", onRemove: toggleHasWebsite });
     }
 
-    if (filters.radius !== 5000) {
+    if (filters.radius !== DEFAULT_FILTERS.radius) {
       chips.push({
         key: "radius",
         label: `Radius: ${Math.round(filters.radius / 1000)} km`,
-        onRemove: () => handleRadiusChange(5000),
+        onRemove: () => handleRadiusChange(DEFAULT_FILTERS.radius),
       });
     }
 
@@ -272,7 +305,9 @@ export default function Home() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-xl font-black uppercase tracking-[0.12em] text-red-500">LocalMiner</h1>
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{listHeader}</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              {listHeader} · {locationLabel}
+            </p>
           </div>
 
           <div className="flex items-center gap-2">
@@ -286,8 +321,29 @@ export default function Home() {
         </div>
 
         <div className="mt-3 flex items-center justify-between gap-3">
-          <div className="flex-1">
-            <SearchBar defaultValue="" onSearch={handleSearch} />
+          <div className="flex flex-1 gap-2">
+            <div className="flex-1">
+              <SearchBar defaultValue="" onSearch={handleSearch} />
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={locationQuery}
+                onChange={(event) => setLocationQuery(event.target.value)}
+                placeholder="Change location"
+                className="h-12 w-48 border border-slate-300 bg-white px-3 text-sm text-slate-800 outline-none placeholder:text-slate-400"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  void handleLocationApply();
+                }}
+                disabled={isResolvingLocation}
+                className="border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:border-red-400 hover:text-red-600 disabled:opacity-50"
+              >
+                {isResolvingLocation ? "Changing..." : "Change Location"}
+              </button>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <button

@@ -10,6 +10,7 @@ type UsePlacesParams = {
   latitude: number | null;
   longitude: number | null;
   query: string;
+  radius: number;
 };
 
 type UsePlacesResult = {
@@ -23,18 +24,19 @@ export function usePlaces({
   latitude,
   longitude,
   query,
+  radius,
 }: UsePlacesParams): UsePlacesResult {
   const trimmedQuery = query.trim() || "establishment";
 
   const placesQuery = useQuery({
-    queryKey: ["places", latitude, longitude, trimmedQuery],
+    queryKey: ["places", latitude, longitude, trimmedQuery, radius],
     enabled: latitude !== null && longitude !== null,
     queryFn: async () => {
       if (latitude === null || longitude === null) {
         return [];
       }
 
-      return getNearbyPlaces(latitude, longitude, trimmedQuery);
+      return getNearbyPlaces(latitude, longitude, trimmedQuery, radius);
     },
   });
 

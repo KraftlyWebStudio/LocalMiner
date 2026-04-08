@@ -12,6 +12,6 @@ export const DEFAULT_FILTERS: FilterState = {
   openNow: false,
   hasPhone: false,
   hasWebsite: false,
-  radius: 5000,
+  radius: 20000,
   categories: [],
 };

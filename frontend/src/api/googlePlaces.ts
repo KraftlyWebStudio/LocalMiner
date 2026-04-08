@@ -38,6 +38,22 @@ function toPlaceDetails(result: google.maps.places.PlaceResult): PlaceDetails {
   };
 }
 
+function dedupePlaces(places: Place[]): Place[] {
+  const seen = new Set<string>();
+  const uniquePlaces: Place[] = [];
+
+  for (const place of places) {
+    if (seen.has(place.placeId)) {
+      continue;
+    }
+
+    seen.add(place.placeId);
+    uniquePlaces.push(place);
+  }
+
+  return uniquePlaces;
+}
+
 async function createPlacesService(
   map?: google.maps.Map,
 ): Promise<google.maps.places.PlacesService> {
@@ -55,6 +71,7 @@ export async function getNearbyPlaces(
   lat: number,
   lng: number,
   type: string,
+  radius = 20_000,
   map?: google.maps.Map,
 ): Promise<Place[]> {
   const service = await createPlacesService(map);
@@ -62,17 +79,55 @@ export async function getNearbyPlaces(
   return new Promise((resolve, reject) => {
     const request: google.maps.places.PlaceSearchRequest = {
       location: new google.maps.LatLng(lat, lng),
-      rankBy: google.maps.places.RankBy.DISTANCE,
+      radius,
       keyword: type,
     };
 
-    service.nearbySearch(request, (results, status) => {
+    const allResults: Place[] = [];
+
+    service.nearbySearch(request, (results, status, pagination) => {
       if (status !== google.maps.places.PlacesServiceStatus.OK || !results) {
+        if (status === google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
+          resolve([]);
+          return;
+        }
+
         reject(new Error(`Nearby search failed: ${status}`));
         return;
       }
 
-      resolve(results.map(toPlace).filter((place) => Boolean(place.placeId)));
+      allResults.push(...results.map(toPlace).filter((place) => Boolean(place.placeId)));
+
+      if (pagination?.hasNextPage) {
+        window.setTimeout(() => {
+          pagination.nextPage();
+        }, 2000);
+        return;
+      }
+
+      resolve(dedupePlaces(allResults));
+    });
+  });
+}
+
+export async function geocodeLocation(query: string): Promise<{ lat: number; lng: number; label: string }> {
+  await loadGoogleMaps();
+
+  const geocoder = new google.maps.Geocoder();
+
+  return new Promise((resolve, reject) => {
+    geocoder.geocode({ address: query }, (results, status) => {
+      if (status !== google.maps.GeocoderStatus.OK || !results || results.length === 0) {
+        reject(new Error(`Location not found: ${status}`));
+        return;
+      }
+
+      const firstResult = results[0];
+      resolve({
+        lat: firstResult.geometry.location.lat(),
+        lng: firstResult.geometry.location.lng(),
+        label: firstResult.formatted_address ?? query,
+      });
     });
   });
 }
