@@ -21,6 +21,30 @@ type UsePlacesResult = {
 };
 
 const DETAIL_BATCH_SIZE = 8;
+const DISCOVERY_KEYWORDS = [
+  "restaurant",
+  "cafe",
+  "store",
+  "pharmacy",
+  "hospital",
+  "school",
+  "bank",
+  "gym",
+  "lodging",
+];
+
+function dedupeByPlaceId(places: Place[]): Place[] {
+  const uniqueById = new Map<string, Place>();
+  for (const place of places) {
+    if (!place.placeId) {
+      continue;
+    }
+    if (!uniqueById.has(place.placeId)) {
+      uniqueById.set(place.placeId, place);
+    }
+  }
+  return Array.from(uniqueById.values());
+}
 
 function mergeWithDetails(place: Place, details: PlaceDetails): Place {
   return {
@@ -72,7 +96,7 @@ export function usePlaces({
   query,
   radius,
 }: UsePlacesParams): UsePlacesResult {
-  const trimmedQuery = query.trim() || "establishment";
+  const trimmedQuery = query.trim();
 
   const placesQuery = useQuery({
     queryKey: ["places", latitude, longitude, trimmedQuery, radius],
@@ -83,7 +107,27 @@ export function usePlaces({
         return [];
       }
 
-      const nearbyPlaces = await getNearbyPlaces(latitude, longitude, trimmedQuery, radius);
+      let nearbyPlaces: Place[];
+
+      if (trimmedQuery) {
+        nearbyPlaces = await getNearbyPlaces(latitude, longitude, trimmedQuery, radius);
+      } else {
+        const discoveryResults = await Promise.allSettled(
+          DISCOVERY_KEYWORDS.map((keyword) =>
+            getNearbyPlaces(latitude, longitude, keyword, radius),
+          ),
+        );
+
+        const mergedPlaces: Place[] = [];
+        for (const result of discoveryResults) {
+          if (result.status === "fulfilled") {
+            mergedPlaces.push(...result.value);
+          }
+        }
+
+        nearbyPlaces = dedupeByPlaceId(mergedPlaces);
+      }
+
       return enrichPlacesWithDetails(nearbyPlaces);
     },
   });

@@ -23,6 +23,14 @@ function formatCategory(type: string): string {
     .join(" ");
 }
 
+function formatCategoryList(types: string[]): string {
+  if (!types.length) {
+    return "Unknown";
+  }
+
+  return types.slice(0, 2).map(formatCategory).join(", ");
+}
+
 function renderStars(rating: number): string {
   const safeRating = Number.isFinite(rating) ? Math.max(0, Math.min(5, rating)) : 0;
   const filled = Math.round(safeRating);
@@ -197,7 +205,9 @@ export default function ResultsTable({
                       </button>
                     </td>
 
-                    <td className="px-3 py-3 text-slate-600">{formatCategory(place.types[0] ?? "")}</td>
+                    <td className="px-3 py-3 text-slate-600" title={place.types.map(formatCategory).join(", ")}>
+                      {truncateText(formatCategoryList(place.types), 28)}
+                    </td>
 
                     <td className="px-3 py-3 text-slate-600" title={place.address}>
                       {truncateText(place.address, 52)}

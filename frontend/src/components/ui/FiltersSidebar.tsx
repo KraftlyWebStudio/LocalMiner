@@ -1,6 +1,6 @@
 "use client";
 
-import { FilterState } from "@/types/filters";
+import { FilterState, MAX_RADIUS_METERS, MIN_RADIUS_METERS } from "@/types/filters";
 import { Place } from "@/types/place";
 
 type FiltersSidebarProps = {
@@ -74,8 +74,10 @@ export default function FiltersSidebar({
 }: FiltersSidebarProps) {
   const categorySet = new Set<string>();
   for (const place of allPlaces) {
-    const category = (place.types[0] ?? "unknown").toLowerCase();
-    categorySet.add(category);
+    for (const type of place.types) {
+      const category = type.toLowerCase();
+      categorySet.add(category);
+    }
   }
 
   const categories = Array.from(categorySet).sort();
@@ -84,7 +86,7 @@ export default function FiltersSidebar({
 
   return (
     <aside className="flex h-full w-full flex-col border border-slate-200 bg-white shadow-sm">
-      <div className="border-b border-slate-200 bg-gradient-to-r from-slate-900 to-slate-800 px-4 py-4 text-white">
+      <div className="border-b border-slate-200 bg-linear-to-r from-slate-900 to-slate-800 px-4 py-4 text-white">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-black uppercase tracking-[0.12em]">Filters</h2>
           {isAnyFilterActive && (
@@ -144,8 +146,8 @@ export default function FiltersSidebar({
             </span>
           </div>
 
-          <div className="grid grid-cols-3 gap-2 lg:grid-cols-6">
-            {[2, 5, 10, 20, 50, 100].map((km) => {
+          <div className="grid grid-cols-3 gap-2 lg:grid-cols-5">
+            {[2, 5, 10, 20, 50].map((km) => {
               const meters = km * 1000;
               const active = filters.radius === meters;
               return (
@@ -168,8 +170,8 @@ export default function FiltersSidebar({
 
           <input
             type="range"
-            min={1000}
-            max={100000}
+            min={MIN_RADIUS_METERS}
+            max={MAX_RADIUS_METERS}
             step={500}
             value={filters.radius}
             onChange={(event) => onRadiusChange(Number(event.target.value))}

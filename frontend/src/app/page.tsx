@@ -14,7 +14,7 @@ import { geocodeLocation } from "@/api/googlePlaces";
 import { useExport } from "@/hooks/useExport";
 import { useFilters } from "@/hooks/useFilters";
 import { usePlaces } from "@/hooks/usePlaces";
-import { DEFAULT_FILTERS } from "@/types/filters";
+import { DEFAULT_FILTERS, MAX_RADIUS_METERS, MIN_RADIUS_METERS } from "@/types/filters";
 import { Place } from "@/types/place";
 
 type GeolocationState = {
@@ -28,7 +28,6 @@ type UiToastState = {
 };
 
 const ITEMS_PER_PAGE = 100;
-const FETCH_RADIUS_METERS = 100_000;
 
 type PlaceWithDistance = Place & {
   distanceMeters?: number;
@@ -114,7 +113,8 @@ export default function Home() {
     latitude: location?.lat ?? null,
     longitude: location?.lng ?? null,
     query: searchQuery,
-    radius: FETCH_RADIUS_METERS,
+    // Always fetch with max supported radius so smaller radius views are strict subsets.
+    radius: MAX_RADIUS_METERS,
   });
 
   const placesWithDistance = useMemo((): PlaceWithDistance[] => {
@@ -241,7 +241,8 @@ export default function Home() {
   }, [selectedPlaceId, sortedPlaces]);
 
   const handleRadiusChange = useCallback((meters: number) => {
-    setRadius(meters);
+    const clamped = Math.min(Math.max(meters, MIN_RADIUS_METERS), MAX_RADIUS_METERS);
+    setRadius(clamped);
     setCurrentPage(1);
   }, [setRadius]);
 

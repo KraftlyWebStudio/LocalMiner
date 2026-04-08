@@ -70,18 +70,22 @@ async function createPlacesService(
 export async function getNearbyPlaces(
   lat: number,
   lng: number,
-  type: string,
+  query: string,
   radius = 20_000,
   map?: google.maps.Map,
 ): Promise<Place[]> {
   const service = await createPlacesService(map);
 
   return new Promise((resolve, reject) => {
+    const normalizedQuery = query.trim();
     const request: google.maps.places.PlaceSearchRequest = {
       location: new google.maps.LatLng(lat, lng),
       radius,
-      keyword: type,
     };
+
+    if (normalizedQuery) {
+      request.keyword = normalizedQuery;
+    }
 
     const allResults: Place[] = [];
 
