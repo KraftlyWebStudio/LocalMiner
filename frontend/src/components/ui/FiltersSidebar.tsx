@@ -46,8 +46,8 @@ export default function FiltersSidebar({
   const categories = Array.from(categorySet).sort();
 
   return (
-    <aside className="flex h-full w-full flex-col border border-zinc-800 bg-zinc-900">
-      <div className="border-b border-zinc-800 px-4 py-3">
+    <aside className="flex h-full w-full flex-col border border-zinc-800 bg-zinc-900/95">
+      <div className="border-b border-zinc-800 bg-zinc-950/60 px-4 py-3">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-black uppercase tracking-[0.08em] text-zinc-100">Filters</h2>
           {isAnyFilterActive && (
@@ -60,11 +60,11 @@ export default function FiltersSidebar({
             </button>
           )}
         </div>
-        <p className="mt-1 text-xs text-zinc-400">{resultCount} results</p>
+        <p className="mt-1 text-xs text-zinc-400">{resultCount} matching businesses</p>
       </div>
 
       <div className="flex-1 space-y-5 overflow-y-auto px-4 py-4">
-        <section className="space-y-2">
+        <section className="space-y-2 border border-zinc-800 bg-zinc-950/50 p-3">
           <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400">Minimum Rating</p>
           <div className="grid grid-cols-3 gap-2">
             {[4, 3, 2].map((rating) => (
@@ -86,7 +86,7 @@ export default function FiltersSidebar({
           {filters.minRating !== null && <p className="text-xs text-red-300">Active</p>}
         </section>
 
-        <section className="space-y-2">
+        <section className="space-y-2 border border-zinc-800 bg-zinc-950/50 p-3">
           <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400">Business Filters</p>
           <div className="space-y-2">
             <label className="flex items-center justify-between text-sm text-zinc-200">
@@ -122,7 +122,7 @@ export default function FiltersSidebar({
           )}
         </section>
 
-        <section className="space-y-2">
+        <section className="space-y-2 border border-zinc-800 bg-zinc-950/50 p-3">
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400">Radius</p>
             <span className="text-xs font-semibold text-zinc-300">{Math.round(filters.radius / 1000)} km</span>
@@ -139,7 +139,7 @@ export default function FiltersSidebar({
           {filters.radius !== 5000 && <p className="text-xs text-red-300">Active</p>}
         </section>
 
-        <section className="space-y-2">
+        <section className="space-y-2 border border-zinc-800 bg-zinc-950/50 p-3">
           <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400">Categories</p>
           <div className="max-h-56 space-y-1 overflow-y-auto pr-1">
             {categories.map((category) => {

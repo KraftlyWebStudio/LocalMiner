@@ -98,12 +98,12 @@ export default function ResultsTable({
   };
 
   return (
-    <div className="flex h-full flex-col border border-zinc-800 bg-zinc-950">
+    <div className="flex h-full flex-col border border-zinc-800 bg-zinc-950/95">
       <div className="min-h-0 flex-1 overflow-auto">
-        <table className="min-w-[1320px] w-full border-collapse text-sm text-zinc-100">
-          <thead className="sticky top-0 z-10 bg-gray-900 text-xs uppercase tracking-wide text-zinc-200">
+        <table className="w-full min-w-[1320px] border-collapse text-sm text-zinc-100">
+          <thead className="sticky top-0 z-10 bg-zinc-900 text-xs uppercase tracking-wide text-zinc-300">
             <tr>
-              <th className="w-12 border-b border-gray-800 px-3 py-3 text-left">
+              <th className="sticky left-0 z-10 w-12 border-b border-gray-800 bg-zinc-900 px-3 py-3 text-left">
                 <input
                   ref={selectAllRef}
                   type="checkbox"
@@ -114,7 +114,9 @@ export default function ResultsTable({
                 />
               </th>
               <th className="w-12 border-b border-gray-800 px-3 py-3 text-left">#</th>
-              <th className="min-w-[200px] border-b border-gray-800 px-3 py-3 text-left">Business Name</th>
+              <th className="sticky left-12 z-10 min-w-[200px] border-b border-gray-800 bg-zinc-900 px-3 py-3 text-left">
+                Business Name
+              </th>
               <th className="min-w-[150px] border-b border-gray-800 px-3 py-3 text-left">Category</th>
               <th className="min-w-[230px] border-b border-gray-800 px-3 py-3 text-left">Address</th>
               <th className="min-w-[150px] border-b border-gray-800 px-3 py-3 text-left">Phone</th>
@@ -129,7 +131,7 @@ export default function ResultsTable({
           <tbody>
             {isLoading &&
               Array.from({ length: 5 }).map((_, rowIdx) => (
-                <tr key={`skeleton-${rowIdx}`} className="border-b border-gray-800 animate-pulse">
+                <tr key={`skeleton-${rowIdx}`} className="animate-pulse border-b border-gray-800">
                   {Array.from({ length: 11 }).map((__, colIdx) => (
                     <td key={`cell-${rowIdx}-${colIdx}`} className="px-3 py-3">
                       <div className="h-4 w-full bg-zinc-800" />
@@ -161,11 +163,14 @@ export default function ResultsTable({
                     key={place.placeId}
                     onClick={() => onSelectPlace(place)}
                     className={[
-                      "cursor-pointer border-b border-gray-800 hover:bg-gray-800/50",
+                      "cursor-pointer border-b border-gray-800/80 hover:bg-gray-800/40",
                       isActive ? "border-l-4 border-red-500 bg-red-950/20" : "",
                     ].join(" ")}
                   >
-                    <td className="px-3 py-3" onClick={(event) => event.stopPropagation()}>
+                    <td
+                      className="sticky left-0 z-[1] bg-zinc-950 px-3 py-3"
+                      onClick={(event) => event.stopPropagation()}
+                    >
                       <input
                         type="checkbox"
                         checked={isChecked}
@@ -177,7 +182,7 @@ export default function ResultsTable({
 
                     <td className="px-3 py-3 text-zinc-400">{index + 1}</td>
 
-                    <td className="px-3 py-3">
+                    <td className="sticky left-12 z-[1] bg-zinc-950 px-3 py-3">
                       <button
                         type="button"
                         onClick={(event) => {
@@ -196,7 +201,7 @@ export default function ResultsTable({
                       {truncateText(place.address, 52)}
                     </td>
 
-                    <td className="px-3 py-3 text-zinc-300">—</td>
+                    <td className="px-3 py-3 text-zinc-400">—</td>
 
                     <td className="px-3 py-3">
                       {typeof place.rating === "number" ? (
@@ -266,7 +271,7 @@ export default function ResultsTable({
       </div>
 
       {selectedCountInCurrentRows > 0 && (
-        <div className="flex items-center justify-between border-t border-zinc-800 bg-zinc-900 px-4 py-3 text-sm">
+        <div className="flex items-center justify-between border-t border-zinc-800 bg-zinc-900/95 px-4 py-3 text-sm">
           <span className="text-zinc-200">{selectedCountInCurrentRows} businesses selected</span>
           <div className="flex gap-2">
             <button

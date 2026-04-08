@@ -216,36 +216,63 @@ export default function Home() {
     return `${filteredPlaces.length} places found for \"${searchQuery}\"`;
   }, [errorMessage, filteredPlaces.length, isLoading, location, locationError, searchQuery]);
 
+  const kpiCards = useMemo(() => {
+    const total = filteredPlaces.length;
+    const openNowCount = filteredPlaces.filter((place) => place.openNow).length;
+    const rated = filteredPlaces.filter((place) => typeof place.rating === "number");
+    const avgRating =
+      rated.length > 0
+        ? (rated.reduce((sum, place) => sum + (place.rating ?? 0), 0) / rated.length).toFixed(1)
+        : "0.0";
+
+    return [
+      { label: "Results", value: total.toString() },
+      { label: "Open Now", value: openNowCount.toString() },
+      { label: "Avg Rating", value: avgRating },
+    ];
+  }, [filteredPlaces]);
+
   return (
     <main className="flex h-screen w-screen flex-col bg-zinc-950 text-zinc-100">
-      <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-3">
-        <div className="flex items-center gap-3">
-          <h1 className="text-lg font-black uppercase tracking-[0.1em] text-red-500">LocalMiner</h1>
-          <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400">{listHeader}</p>
-        </div>
-        <button
-          type="button"
-          onClick={() => setIsMapVisible((prev) => !prev)}
-          className="border border-zinc-700 px-3 py-1.5 text-xs font-semibold text-zinc-200 hover:border-red-500 hover:text-red-300"
-        >
-          {isMapVisible ? "Hide Map" : "Show Map"}
-        </button>
-      </div>
+      <div className="border-b border-zinc-800 bg-zinc-950/90 px-4 py-4 backdrop-blur">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h1 className="text-xl font-black uppercase tracking-[0.12em] text-red-500">LocalMiner</h1>
+            <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400">{listHeader}</p>
+          </div>
 
-      <div className="border-b border-zinc-800 px-4 py-3">
-        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            {kpiCards.map((card) => (
+              <div key={card.label} className="border border-zinc-800 bg-zinc-900 px-3 py-2">
+                <p className="text-[10px] uppercase tracking-wide text-zinc-500">{card.label}</p>
+                <p className="text-sm font-bold text-zinc-100">{card.value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-3 flex items-center justify-between gap-3">
           <div className="flex-1">
             <SearchBar defaultValue="restaurant" onSearch={handleSearch} />
           </div>
-          <button
-            type="button"
-            onClick={openModalForAll}
-            disabled={filteredPlaces.length === 0}
-            className="inline-flex items-center gap-2 rounded-lg border border-gray-600 px-4 py-2 text-sm text-gray-300 hover:border-red-500 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <span>⬇</span>
-            <span>Export All ({filteredPlaces.length})</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setIsMapVisible((prev) => !prev)}
+              className="border border-zinc-700 px-3 py-2 text-xs font-semibold text-zinc-200 hover:border-red-500 hover:text-red-300"
+            >
+              {isMapVisible ? "Hide Map" : "Show Map"}
+            </button>
+            <button
+              type="button"
+              onClick={openModalForAll}
+              disabled={filteredPlaces.length === 0}
+              className="inline-flex items-center gap-2 border border-gray-600 px-4 py-2 text-sm text-gray-300 hover:border-red-500 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <span>⬇</span>
+              <span>Export All ({filteredPlaces.length})</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -267,7 +294,7 @@ export default function Home() {
         </aside>
 
         <section className="min-h-0 flex-1 space-y-3">
-          <ActiveFilterChips chips={activeFilterChips} />
+          <ActiveFilterChips chips={activeFilterChips} onClearAll={resetFilters} />
           <ResultsTable
             places={filteredPlaces}
             isLoading={isLoading}
