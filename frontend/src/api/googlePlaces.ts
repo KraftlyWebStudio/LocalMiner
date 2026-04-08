@@ -32,6 +32,7 @@ function toPlaceDetails(result: google.maps.places.PlaceResult): PlaceDetails {
     phoneNumber: result.formatted_phone_number,
     internationalPhoneNumber: result.international_phone_number,
     website: result.website,
+    mapsUrl: result.url,
     businessStatus: result.business_status,
     openingHours: result.opening_hours?.weekday_text,
   };
@@ -97,6 +98,7 @@ export async function getPlaceDetails(
         "international_phone_number",
         "opening_hours",
         "website",
+        "url",
         "business_status",
       ],
     };

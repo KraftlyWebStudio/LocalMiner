@@ -2,8 +2,8 @@
 
 import { useQuery } from "@tanstack/react-query";
 
-import { getNearbyPlaces } from "@/api/googlePlaces";
-import { Place } from "@/types/place";
+import { getNearbyPlaces, getPlaceDetails } from "@/api/googlePlaces";
+import { Place, PlaceDetails } from "@/types/place";
 
 type UsePlacesParams = {
   latitude: number | null;
@@ -44,5 +44,31 @@ export function usePlaces({
     refetch: () => {
       void placesQuery.refetch();
     },
+  };
+}
+
+type UsePlaceDetailsResult = {
+  placeDetails: PlaceDetails | null;
+  isLoading: boolean;
+  errorMessage: string | null;
+};
+
+export function usePlaceDetails(placeId: string | null): UsePlaceDetailsResult {
+  const detailsQuery = useQuery({
+    queryKey: ["place-details", placeId],
+    enabled: Boolean(placeId),
+    queryFn: async () => {
+      if (!placeId) {
+        return null;
+      }
+
+      return getPlaceDetails(placeId);
+    },
+  });
+
+  return {
+    placeDetails: detailsQuery.data ?? null,
+    isLoading: detailsQuery.isFetching,
+    errorMessage: detailsQuery.error instanceof Error ? detailsQuery.error.message : null,
   };
 }

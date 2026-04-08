@@ -7,7 +7,7 @@ import MainLayout from "@/components/layouts/MainLayout";
 import Map from "@/components/ui/Map";
 import PlaceCard from "@/components/ui/PlaceCard";
 import SearchBar from "@/components/ui/SearchBar";
-import { usePlaces } from "@/hooks/usePlaces";
+import { usePlaceDetails, usePlaces } from "@/hooks/usePlaces";
 import { Place } from "@/types/place";
 
 type GeolocationState = {
@@ -73,6 +73,12 @@ export default function Home() {
     return places.find((place) => place.placeId === selectedPlaceId) ?? null;
   }, [places, selectedPlaceId]);
 
+  const {
+    placeDetails: selectedPlaceDetails,
+    isLoading: isPlaceDetailsLoading,
+    errorMessage: placeDetailsError,
+  } = usePlaceDetails(selectedPlaceInList?.placeId ?? null);
+
   const listHeader = useMemo(() => {
     if (locationError) {
       return locationError;
@@ -98,6 +104,97 @@ export default function Home() {
             <p className="text-xs font-semibold uppercase tracking-wide text-zinc-700">{listHeader}</p>
             <SearchBar defaultValue="restaurant" onSearch={handleSearch} />
           </header>
+
+          {selectedPlaceInList && (
+            <section className="space-y-3 border border-zinc-300 bg-white p-4">
+              <h2 className="text-sm font-black uppercase tracking-[0.08em] text-red-700">
+                Place Details
+              </h2>
+              <p className="text-base font-semibold text-zinc-900">{selectedPlaceInList.name}</p>
+
+              {isPlaceDetailsLoading && (
+                <p className="text-sm font-medium text-zinc-700">Loading full details...</p>
+              )}
+
+              {placeDetailsError && (
+                <p className="text-sm font-medium text-red-700">{placeDetailsError}</p>
+              )}
+
+              {selectedPlaceDetails && (
+                <div className="space-y-2 text-sm text-zinc-800">
+                  <p>
+                    <span className="font-semibold">Phone:</span>{" "}
+                    {selectedPlaceDetails.phoneNumber ? (
+                      <a
+                        href={`tel:${selectedPlaceDetails.phoneNumber}`}
+                        className="text-red-700 hover:underline"
+                      >
+                        {selectedPlaceDetails.phoneNumber}
+                      </a>
+                    ) : (
+                      "Not available"
+                    )}
+                  </p>
+
+                  <p>
+                    <span className="font-semibold">Website:</span>{" "}
+                    {selectedPlaceDetails.website ? (
+                      <a
+                        href={selectedPlaceDetails.website}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-red-700 hover:underline"
+                      >
+                        Open website
+                      </a>
+                    ) : (
+                      "Not available"
+                    )}
+                  </p>
+
+                  <p>
+                    <span className="font-semibold">Google Maps:</span>{" "}
+                    {selectedPlaceDetails.mapsUrl ? (
+                      <a
+                        href={selectedPlaceDetails.mapsUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-red-700 hover:underline"
+                      >
+                        Open listing
+                      </a>
+                    ) : (
+                      "Not available"
+                    )}
+                  </p>
+
+                  <p>
+                    <span className="font-semibold">Business Status:</span>{" "}
+                    {selectedPlaceDetails.businessStatus ?? "Not available"}
+                  </p>
+
+                  <p>
+                    <span className="font-semibold">Email:</span> Not provided by Google Places API
+                  </p>
+
+                  <p>
+                    <span className="font-semibold">Social Media:</span> Not provided by Google Places API
+                  </p>
+
+                  {selectedPlaceDetails.openingHours && selectedPlaceDetails.openingHours.length > 0 && (
+                    <div>
+                      <p className="font-semibold">Opening Hours:</p>
+                      <ul className="mt-1 space-y-1">
+                        {selectedPlaceDetails.openingHours.map((line) => (
+                          <li key={line}>{line}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+            </section>
+          )}
 
           <div className="grid flex-1 auto-rows-min gap-3 overflow-y-auto pr-1">
             {places.map((place) => (

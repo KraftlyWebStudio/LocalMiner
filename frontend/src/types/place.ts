@@ -19,6 +19,7 @@ export type PlaceDetails = Place & {
   phoneNumber?: string;
   internationalPhoneNumber?: string;
   website?: string;
+  mapsUrl?: string;
   businessStatus?: string;
   openingHours?: string[];
 };
