@@ -21,17 +21,65 @@ type UsePlacesResult = {
 };
 
 const DETAIL_BATCH_SIZE = 8;
-const DISCOVERY_KEYWORDS = [
-  "restaurant",
-  "cafe",
-  "store",
-  "pharmacy",
-  "hospital",
-  "school",
-  "bank",
-  "gym",
-  "lodging",
-];
+const MAX_ENRICHMENT_CANDIDATES = 150;
+
+type LatLng = { lat: number; lng: number };
+
+function toRadians(degrees: number): number {
+  return (degrees * Math.PI) / 180;
+}
+
+function toDegrees(radians: number): number {
+  return (radians * 180) / Math.PI;
+}
+
+function calculateDistanceMeters(origin: LatLng, destination: LatLng): number {
+  const earthRadiusMeters = 6_371_000;
+  const latitudeDelta = toRadians(destination.lat - origin.lat);
+  const longitudeDelta = toRadians(destination.lng - origin.lng);
+  const startLatitude = toRadians(origin.lat);
+  const endLatitude = toRadians(destination.lat);
+
+  const a =
+    Math.sin(latitudeDelta / 2) * Math.sin(latitudeDelta / 2) +
+    Math.sin(longitudeDelta / 2) * Math.sin(longitudeDelta / 2) *
+      Math.cos(startLatitude) *
+      Math.cos(endLatitude);
+
+  return 2 * earthRadiusMeters * Math.asin(Math.sqrt(a));
+}
+
+function offsetCoordinate(origin: LatLng, distanceMeters: number, bearingDegrees: number): LatLng {
+  const earthRadiusMeters = 6_371_000;
+  const angularDistance = distanceMeters / earthRadiusMeters;
+  const bearing = toRadians(bearingDegrees);
+
+  const latitude1 = toRadians(origin.lat);
+  const longitude1 = toRadians(origin.lng);
+
+  const latitude2 = Math.asin(
+    Math.sin(latitude1) * Math.cos(angularDistance) +
+      Math.cos(latitude1) * Math.sin(angularDistance) * Math.cos(bearing),
+  );
+
+  const longitude2 =
+    longitude1 +
+    Math.atan2(
+      Math.sin(bearing) * Math.sin(angularDistance) * Math.cos(latitude1),
+      Math.cos(angularDistance) - Math.sin(latitude1) * Math.sin(latitude2),
+    );
+
+  return {
+    lat: toDegrees(latitude2),
+    lng: toDegrees(longitude2),
+  };
+}
+
+function buildSearchCenters(origin: LatLng, radiusMeters: number): LatLng[] {
+  const ringDistance = Math.max(2_000, Math.min(20_000, radiusMeters * 0.6));
+  const bearings = [0, 60, 120, 180, 240, 300];
+  return [origin, ...bearings.map((bearing) => offsetCoordinate(origin, ringDistance, bearing))];
+}
 
 function dedupeByPlaceId(places: Place[]): Place[] {
   const uniqueById = new Map<string, Place>();
@@ -44,6 +92,38 @@ function dedupeByPlaceId(places: Place[]): Place[] {
     }
   }
   return Array.from(uniqueById.values());
+}
+
+async function collectNearbyPlaces(
+  origin: LatLng,
+  query: string,
+  radiusMeters: number,
+): Promise<Place[]> {
+  const centers = buildSearchCenters(origin, radiusMeters);
+  const searchRadius = Math.max(3_000, Math.min(50_000, Math.round(radiusMeters * 0.7)));
+
+  const settled = await Promise.allSettled(
+    centers.map((center) => getNearbyPlaces(center.lat, center.lng, query, searchRadius)),
+  );
+
+  const mergedPlaces: Place[] = [];
+  for (const result of settled) {
+    if (result.status === "fulfilled") {
+      mergedPlaces.push(...result.value);
+    }
+  }
+
+  const deduped = dedupeByPlaceId(mergedPlaces);
+  deduped.sort((left, right) => {
+    const leftDistance = calculateDistanceMeters(origin, left.location);
+    const rightDistance = calculateDistanceMeters(origin, right.location);
+    if (leftDistance !== rightDistance) {
+      return leftDistance - rightDistance;
+    }
+    return left.name.localeCompare(right.name);
+  });
+
+  return deduped;
 }
 
 function mergeWithDetails(place: Place, details: PlaceDetails): Place {
@@ -107,28 +187,9 @@ export function usePlaces({
         return [];
       }
 
-      let nearbyPlaces: Place[];
-
-      if (trimmedQuery) {
-        nearbyPlaces = await getNearbyPlaces(latitude, longitude, trimmedQuery, radius);
-      } else {
-        const discoveryResults = await Promise.allSettled(
-          DISCOVERY_KEYWORDS.map((keyword) =>
-            getNearbyPlaces(latitude, longitude, keyword, radius),
-          ),
-        );
-
-        const mergedPlaces: Place[] = [];
-        for (const result of discoveryResults) {
-          if (result.status === "fulfilled") {
-            mergedPlaces.push(...result.value);
-          }
-        }
-
-        nearbyPlaces = dedupeByPlaceId(mergedPlaces);
-      }
-
-      return enrichPlacesWithDetails(nearbyPlaces);
+      const origin = { lat: latitude, lng: longitude };
+      const nearbyPlaces = await collectNearbyPlaces(origin, trimmedQuery, radius);
+      return enrichPlacesWithDetails(nearbyPlaces.slice(0, MAX_ENRICHMENT_CANDIDATES));
     },
   });
 
