@@ -46,26 +46,26 @@ export default function FiltersSidebar({
   const categories = Array.from(categorySet).sort();
 
   return (
-    <aside className="flex h-full w-full flex-col border border-zinc-800 bg-zinc-900/95">
-      <div className="border-b border-zinc-800 bg-zinc-950/60 px-4 py-3">
+    <aside className="flex h-full w-full flex-col border border-slate-200 bg-white shadow-sm">
+      <div className="border-b border-slate-200 bg-slate-50 px-4 py-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-black uppercase tracking-[0.08em] text-zinc-100">Filters</h2>
+          <h2 className="text-sm font-black uppercase tracking-[0.08em] text-slate-800">Filters</h2>
           {isAnyFilterActive && (
             <button
               type="button"
               onClick={resetFilters}
-              className="text-xs font-semibold text-red-300 hover:text-red-200"
+              className="text-xs font-semibold text-red-600 hover:text-red-500"
             >
               Reset
             </button>
           )}
         </div>
-        <p className="mt-1 text-xs text-zinc-400">{resultCount} matching businesses</p>
+        <p className="mt-1 text-xs text-slate-500">{resultCount} matching businesses</p>
       </div>
 
       <div className="flex-1 space-y-5 overflow-y-auto px-4 py-4">
-        <section className="space-y-2 border border-zinc-800 bg-zinc-950/50 p-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400">Minimum Rating</p>
+        <section className="space-y-2 border border-slate-200 bg-slate-50 p-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Minimum Rating</p>
           <div className="grid grid-cols-3 gap-2">
             {[4, 3, 2].map((rating) => (
               <button
@@ -75,21 +75,21 @@ export default function FiltersSidebar({
                 className={[
                   "border px-2 py-1.5 text-xs font-semibold",
                   filters.minRating === rating
-                    ? "border-red-500 bg-red-950/30 text-red-300"
-                    : "border-zinc-700 text-zinc-300 hover:border-zinc-500",
+                    ? "border-red-500 bg-red-50 text-red-700"
+                    : "border-slate-300 bg-white text-slate-700 hover:border-slate-400",
                 ].join(" ")}
               >
                 {rating}★+
               </button>
             ))}
           </div>
-          {filters.minRating !== null && <p className="text-xs text-red-300">Active</p>}
+          {filters.minRating !== null && <p className="text-xs text-red-600">Active</p>}
         </section>
 
-        <section className="space-y-2 border border-zinc-800 bg-zinc-950/50 p-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400">Business Filters</p>
+        <section className="space-y-2 border border-slate-200 bg-slate-50 p-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Business Filters</p>
           <div className="space-y-2">
-            <label className="flex items-center justify-between text-sm text-zinc-200">
+            <label className="flex items-center justify-between text-sm text-slate-700">
               <span>Open Now</span>
               <input
                 type="checkbox"
@@ -98,7 +98,7 @@ export default function FiltersSidebar({
                 className="h-4 w-4 accent-red-500"
               />
             </label>
-            <label className="flex items-center justify-between text-sm text-zinc-200">
+            <label className="flex items-center justify-between text-sm text-slate-700">
               <span>Has Phone</span>
               <input
                 type="checkbox"
@@ -107,7 +107,7 @@ export default function FiltersSidebar({
                 className="h-4 w-4 accent-red-500"
               />
             </label>
-            <label className="flex items-center justify-between text-sm text-zinc-200">
+            <label className="flex items-center justify-between text-sm text-slate-700">
               <span>Has Website</span>
               <input
                 type="checkbox"
@@ -118,14 +118,14 @@ export default function FiltersSidebar({
             </label>
           </div>
           {(filters.openNow || filters.hasPhone || filters.hasWebsite) && (
-            <p className="text-xs text-red-300">Active</p>
+            <p className="text-xs text-red-600">Active</p>
           )}
         </section>
 
-        <section className="space-y-2 border border-zinc-800 bg-zinc-950/50 p-3">
+        <section className="space-y-2 border border-slate-200 bg-slate-50 p-3">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400">Radius</p>
-            <span className="text-xs font-semibold text-zinc-300">{Math.round(filters.radius / 1000)} km</span>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Radius</p>
+            <span className="text-xs font-semibold text-slate-700">{Math.round(filters.radius / 1000)} km</span>
           </div>
           <input
             type="range"
@@ -136,16 +136,16 @@ export default function FiltersSidebar({
             onChange={(event) => onRadiusChange(Number(event.target.value))}
             className="w-full accent-red-500"
           />
-          {filters.radius !== 5000 && <p className="text-xs text-red-300">Active</p>}
+          {filters.radius !== 5000 && <p className="text-xs text-red-600">Active</p>}
         </section>
 
-        <section className="space-y-2 border border-zinc-800 bg-zinc-950/50 p-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400">Categories</p>
+        <section className="space-y-2 border border-slate-200 bg-slate-50 p-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Categories</p>
           <div className="max-h-56 space-y-1 overflow-y-auto pr-1">
             {categories.map((category) => {
               const checked = filters.categories.includes(category);
               return (
-                <label key={category} className="flex items-center justify-between text-sm text-zinc-200">
+                <label key={category} className="flex items-center justify-between text-sm text-slate-700">
                   <span>{formatCategory(category)}</span>
                   <input
                     type="checkbox"
@@ -158,7 +158,7 @@ export default function FiltersSidebar({
             })}
           </div>
           {filters.categories.length > 0 && (
-            <p className="text-xs text-red-300">{filters.categories.length} active</p>
+            <p className="text-xs text-red-600">{filters.categories.length} active</p>
           )}
         </section>
       </div>

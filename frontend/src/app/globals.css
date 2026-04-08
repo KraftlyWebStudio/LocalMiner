@@ -1,11 +1,11 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f4f4f5;
+  --background: #f6f7fb;
   --foreground: #0f172a;
   --surface: #ffffff;
-  --primary: #b91c1c;
-  --primary-strong: #991b1b;
+  --primary: #e53e3e;
+  --primary-strong: #c53030;
 }
 
 @theme inline {
@@ -30,14 +30,9 @@ body {
 
 body {
   background:
-    linear-gradient(135deg, rgba(185, 28, 28, 0.06) 0%, rgba(244, 244, 245, 0.95) 35%),
-    repeating-linear-gradient(
-      0deg,
-      rgba(255, 255, 255, 0.9) 0,
-      rgba(255, 255, 255, 0.9) 28px,
-      rgba(226, 232, 240, 0.9) 28px,
-      rgba(226, 232, 240, 0.9) 29px
-    );
+    radial-gradient(circle at 10% 10%, rgba(229, 62, 62, 0.1), transparent 30%),
+    radial-gradient(circle at 90% 0%, rgba(15, 23, 42, 0.06), transparent 32%),
+    linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
   color: var(--foreground);
   font-family: var(--font-sans), "Segoe UI", sans-serif;
 }

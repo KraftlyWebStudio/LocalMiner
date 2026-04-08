@@ -24,13 +24,13 @@ export default function SearchBar({
   }, [debounceMs, onSearch, value]);
 
   return (
-    <div className="border border-zinc-700 bg-zinc-900">
+    <div className="border border-slate-300 bg-white shadow-sm focus-within:border-red-400 focus-within:ring-2 focus-within:ring-red-100">
       <input
         type="text"
         value={value}
         onChange={(event) => setValue(event.target.value)}
         placeholder="Search nearby places (e.g., bakery, pharmacy)"
-        className="h-12 w-full border-0 bg-transparent px-4 text-sm font-medium text-zinc-100 outline-none placeholder:text-zinc-500"
+        className="h-12 w-full border-0 bg-transparent px-4 text-sm font-medium text-slate-800 outline-none placeholder:text-slate-400"
         aria-label="Search place type"
       />
     </div>

@@ -98,12 +98,12 @@ export default function ResultsTable({
   };
 
   return (
-    <div className="flex h-full flex-col border border-zinc-800 bg-zinc-950/95">
+    <div className="flex h-full flex-col border border-slate-200 bg-white shadow-sm">
       <div className="min-h-0 flex-1 overflow-auto">
-        <table className="w-full min-w-[1320px] border-collapse text-sm text-zinc-100">
-          <thead className="sticky top-0 z-10 bg-zinc-900 text-xs uppercase tracking-wide text-zinc-300">
+        <table className="w-full min-w-[1320px] border-collapse text-sm text-slate-700">
+          <thead className="sticky top-0 z-10 bg-slate-800 text-xs uppercase tracking-wide text-slate-100">
             <tr>
-              <th className="sticky left-0 z-10 w-12 border-b border-gray-800 bg-zinc-900 px-3 py-3 text-left">
+              <th className="sticky left-0 z-10 w-12 border-b border-slate-700 bg-slate-800 px-3 py-3 text-left">
                 <input
                   ref={selectAllRef}
                   type="checkbox"
@@ -113,28 +113,28 @@ export default function ResultsTable({
                   className="h-4 w-4 accent-red-500"
                 />
               </th>
-              <th className="w-12 border-b border-gray-800 px-3 py-3 text-left">#</th>
-              <th className="sticky left-12 z-10 min-w-[200px] border-b border-gray-800 bg-zinc-900 px-3 py-3 text-left">
+              <th className="w-12 border-b border-slate-700 px-3 py-3 text-left">#</th>
+              <th className="sticky left-12 z-10 min-w-[200px] border-b border-slate-700 bg-slate-800 px-3 py-3 text-left">
                 Business Name
               </th>
-              <th className="min-w-[150px] border-b border-gray-800 px-3 py-3 text-left">Category</th>
-              <th className="min-w-[230px] border-b border-gray-800 px-3 py-3 text-left">Address</th>
-              <th className="min-w-[150px] border-b border-gray-800 px-3 py-3 text-left">Phone</th>
-              <th className="min-w-[150px] border-b border-gray-800 px-3 py-3 text-left">Rating</th>
-              <th className="min-w-[120px] border-b border-gray-800 px-3 py-3 text-left">Status</th>
-              <th className="min-w-[110px] border-b border-gray-800 px-3 py-3 text-left">Website</th>
-              <th className="min-w-[100px] border-b border-gray-800 px-3 py-3 text-left">Maps Link</th>
-              <th className="min-w-[190px] border-b border-gray-800 px-3 py-3 text-left">Actions</th>
+              <th className="min-w-[150px] border-b border-slate-700 px-3 py-3 text-left">Category</th>
+              <th className="min-w-[230px] border-b border-slate-700 px-3 py-3 text-left">Address</th>
+              <th className="min-w-[150px] border-b border-slate-700 px-3 py-3 text-left">Phone</th>
+              <th className="min-w-[150px] border-b border-slate-700 px-3 py-3 text-left">Rating</th>
+              <th className="min-w-[120px] border-b border-slate-700 px-3 py-3 text-left">Status</th>
+              <th className="min-w-[110px] border-b border-slate-700 px-3 py-3 text-left">Website</th>
+              <th className="min-w-[100px] border-b border-slate-700 px-3 py-3 text-left">Maps Link</th>
+              <th className="min-w-[190px] border-b border-slate-700 px-3 py-3 text-left">Actions</th>
             </tr>
           </thead>
 
           <tbody>
             {isLoading &&
               Array.from({ length: 5 }).map((_, rowIdx) => (
-                <tr key={`skeleton-${rowIdx}`} className="animate-pulse border-b border-gray-800">
+                <tr key={`skeleton-${rowIdx}`} className="animate-pulse border-b border-slate-200">
                   {Array.from({ length: 11 }).map((__, colIdx) => (
                     <td key={`cell-${rowIdx}-${colIdx}`} className="px-3 py-3">
-                      <div className="h-4 w-full bg-zinc-800" />
+                      <div className="h-4 w-full bg-slate-200" />
                     </td>
                   ))}
                 </tr>
@@ -142,7 +142,7 @@ export default function ResultsTable({
 
             {!isLoading && places.length === 0 && (
               <tr>
-                <td colSpan={11} className="px-4 py-14 text-center text-zinc-400">
+                <td colSpan={11} className="px-4 py-14 text-center text-slate-500">
                   <div className="flex flex-col items-center gap-2">
                     <span className="text-2xl">🔎</span>
                     <p className="text-sm font-medium">No results found</p>
@@ -163,12 +163,12 @@ export default function ResultsTable({
                     key={place.placeId}
                     onClick={() => onSelectPlace(place)}
                     className={[
-                      "cursor-pointer border-b border-gray-800/80 hover:bg-gray-800/40",
-                      isActive ? "border-l-4 border-red-500 bg-red-950/20" : "",
+                      "cursor-pointer border-b border-slate-200 hover:bg-slate-50",
+                      isActive ? "border-l-4 border-red-500 bg-red-50/60" : "",
                     ].join(" ")}
                   >
                     <td
-                      className="sticky left-0 z-[1] bg-zinc-950 px-3 py-3"
+                      className="sticky left-0 z-[1] bg-white px-3 py-3"
                       onClick={(event) => event.stopPropagation()}
                     >
                       <input
@@ -180,39 +180,39 @@ export default function ResultsTable({
                       />
                     </td>
 
-                    <td className="px-3 py-3 text-zinc-400">{index + 1}</td>
+                    <td className="px-3 py-3 text-slate-500">{index + 1}</td>
 
-                    <td className="sticky left-12 z-[1] bg-zinc-950 px-3 py-3">
+                    <td className="sticky left-12 z-[1] bg-white px-3 py-3">
                       <button
                         type="button"
                         onClick={(event) => {
                           event.stopPropagation();
                           onSelectPlace(place);
                         }}
-                        className="font-semibold text-zinc-100 hover:text-red-300"
+                        className="font-semibold text-slate-800 hover:text-red-600"
                       >
                         {truncateText(place.name, 42)}
                       </button>
                     </td>
 
-                    <td className="px-3 py-3 text-zinc-300">{formatCategory(place.types[0] ?? "")}</td>
+                    <td className="px-3 py-3 text-slate-600">{formatCategory(place.types[0] ?? "")}</td>
 
-                    <td className="px-3 py-3 text-zinc-300" title={place.address}>
+                    <td className="px-3 py-3 text-slate-600" title={place.address}>
                       {truncateText(place.address, 52)}
                     </td>
 
-                    <td className="px-3 py-3 text-zinc-400">—</td>
+                    <td className="px-3 py-3 text-slate-400">—</td>
 
                     <td className="px-3 py-3">
                       {typeof place.rating === "number" ? (
                         <div className="flex items-center gap-2">
                           <span className="text-amber-400">{renderStars(place.rating)}</span>
-                          <span className="text-zinc-300">
+                          <span className="text-slate-600">
                             {place.rating.toFixed(1)} ({place.userRatingsTotal ?? 0})
                           </span>
                         </div>
                       ) : (
-                        <span className="text-zinc-500">—</span>
+                        <span className="text-slate-400">—</span>
                       )}
                     </td>
 
@@ -221,17 +221,17 @@ export default function ResultsTable({
                         className={[
                           "inline-flex px-2 py-1 text-xs font-semibold",
                           statusLabel === "OPEN"
-                            ? "bg-green-900 text-green-300"
+                            ? "bg-green-100 text-green-700"
                             : statusLabel === "CLOSED"
-                              ? "bg-red-900 text-red-300"
-                              : "bg-zinc-800 text-zinc-300",
+                              ? "bg-red-100 text-red-700"
+                              : "bg-slate-100 text-slate-600",
                         ].join(" ")}
                       >
                         {statusLabel}
                       </span>
                     </td>
 
-                    <td className="px-3 py-3 text-zinc-400">—</td>
+                    <td className="px-3 py-3 text-slate-400">—</td>
 
                     <td className="px-3 py-3">
                       <a
@@ -239,7 +239,7 @@ export default function ResultsTable({
                         target="_blank"
                         rel="noreferrer"
                         onClick={(event) => event.stopPropagation()}
-                        className="inline-flex border border-zinc-700 px-2 py-1 text-xs font-semibold text-zinc-100 hover:border-red-400 hover:text-red-300"
+                        className="inline-flex border border-slate-300 bg-white px-2 py-1 text-xs font-semibold text-slate-700 hover:border-red-400 hover:text-red-600"
                       >
                         Open
                       </a>
@@ -250,14 +250,14 @@ export default function ResultsTable({
                         <button
                           type="button"
                           onClick={() => void handleCopy("")}
-                          className="border border-zinc-700 px-2 py-1 text-xs font-semibold text-zinc-200 hover:border-red-400 hover:text-red-300"
+                          className="border border-slate-300 bg-white px-2 py-1 text-xs font-semibold text-slate-700 hover:border-red-400 hover:text-red-600"
                         >
                           Copy phone
                         </button>
                         <button
                           type="button"
                           onClick={() => void handleCopy(place.name)}
-                          className="border border-zinc-700 px-2 py-1 text-xs font-semibold text-zinc-200 hover:border-red-400 hover:text-red-300"
+                          className="border border-slate-300 bg-white px-2 py-1 text-xs font-semibold text-slate-700 hover:border-red-400 hover:text-red-600"
                         >
                           Copy name
                         </button>
@@ -271,13 +271,13 @@ export default function ResultsTable({
       </div>
 
       {selectedCountInCurrentRows > 0 && (
-        <div className="flex items-center justify-between border-t border-zinc-800 bg-zinc-900/95 px-4 py-3 text-sm">
-          <span className="text-zinc-200">{selectedCountInCurrentRows} businesses selected</span>
+        <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-4 py-3 text-sm">
+          <span className="text-slate-700">{selectedCountInCurrentRows} businesses selected</span>
           <div className="flex gap-2">
             <button
               type="button"
               onClick={() => setSelectedIds(new Set())}
-              className="border border-zinc-700 px-3 py-1.5 text-xs font-semibold text-zinc-200 hover:border-zinc-500"
+              className="border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-slate-400"
             >
               Clear selection
             </button>

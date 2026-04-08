@@ -233,19 +233,19 @@ export default function Home() {
   }, [filteredPlaces]);
 
   return (
-    <main className="flex h-screen w-screen flex-col bg-zinc-950 text-zinc-100">
-      <div className="border-b border-zinc-800 bg-zinc-950/90 px-4 py-4 backdrop-blur">
+    <main className="flex h-screen w-screen flex-col bg-transparent text-slate-800">
+      <div className="border-b border-slate-200 bg-white/90 px-5 py-4 backdrop-blur">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-xl font-black uppercase tracking-[0.12em] text-red-500">LocalMiner</h1>
-            <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400">{listHeader}</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{listHeader}</p>
           </div>
 
           <div className="flex items-center gap-2">
             {kpiCards.map((card) => (
-              <div key={card.label} className="border border-zinc-800 bg-zinc-900 px-3 py-2">
-                <p className="text-[10px] uppercase tracking-wide text-zinc-500">{card.label}</p>
-                <p className="text-sm font-bold text-zinc-100">{card.value}</p>
+              <div key={card.label} className="border border-slate-200 bg-slate-50 px-3 py-2 shadow-sm">
+                <p className="text-[10px] uppercase tracking-wide text-slate-500">{card.label}</p>
+                <p className="text-sm font-bold text-slate-800">{card.value}</p>
               </div>
             ))}
           </div>
@@ -259,7 +259,7 @@ export default function Home() {
             <button
               type="button"
               onClick={() => setIsMapVisible((prev) => !prev)}
-              className="border border-zinc-700 px-3 py-2 text-xs font-semibold text-zinc-200 hover:border-red-500 hover:text-red-300"
+              className="border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:border-red-400 hover:text-red-600"
             >
               {isMapVisible ? "Hide Map" : "Show Map"}
             </button>
@@ -267,7 +267,7 @@ export default function Home() {
               type="button"
               onClick={openModalForAll}
               disabled={filteredPlaces.length === 0}
-              className="inline-flex items-center gap-2 border border-gray-600 px-4 py-2 text-sm text-gray-300 hover:border-red-500 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex items-center gap-2 border border-slate-300 bg-white px-4 py-2 text-sm text-slate-700 hover:border-red-400 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <span>⬇</span>
               <span>Export All ({filteredPlaces.length})</span>
@@ -276,7 +276,7 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="min-h-0 flex-1 gap-4 p-4 lg:flex">
+      <div className="min-h-0 flex-1 gap-4 p-5 lg:flex">
         <aside className="hidden min-h-0 lg:block lg:w-[290px]">
           <FiltersSidebar
             filters={filters}
@@ -305,7 +305,7 @@ export default function Home() {
         </section>
 
         {isMapVisible && (
-          <aside className="mt-4 h-[40vh] border border-zinc-800 bg-zinc-900 lg:mt-0 lg:h-full lg:w-[38%]">
+          <aside className="mt-4 h-[40vh] border border-slate-200 bg-white shadow-sm lg:mt-0 lg:h-full lg:w-[38%]">
             <Map
               places={filteredPlaces}
               center={location}
@@ -319,7 +319,7 @@ export default function Home() {
       <button
         type="button"
         onClick={() => setIsMobileFiltersOpen(true)}
-        className="fixed bottom-4 left-4 z-40 inline-flex items-center gap-2 border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm font-semibold text-zinc-100 shadow-lg md:hidden"
+        className="fixed bottom-4 left-4 z-40 inline-flex items-center gap-2 border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-lg md:hidden"
       >
         <span>⚙ Filters</span>
         {isAnyFilterActive && (
@@ -337,13 +337,13 @@ export default function Home() {
             onClick={() => setIsMobileFiltersOpen(false)}
             className="h-full flex-1 bg-black/60"
           />
-          <div className="h-full w-[88%] max-w-sm border-l border-zinc-800 bg-zinc-950">
-            <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-3">
-              <p className="text-sm font-black uppercase tracking-wide text-zinc-100">Filters</p>
+          <div className="h-full w-[88%] max-w-sm border-l border-slate-200 bg-white">
+            <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+              <p className="text-sm font-black uppercase tracking-wide text-slate-800">Filters</p>
               <button
                 type="button"
                 onClick={() => setIsMobileFiltersOpen(false)}
-                className="border border-zinc-700 px-2 py-1 text-xs font-semibold text-zinc-200"
+                className="border border-slate-300 px-2 py-1 text-xs font-semibold text-slate-700"
               >
                 Close
               </button>
