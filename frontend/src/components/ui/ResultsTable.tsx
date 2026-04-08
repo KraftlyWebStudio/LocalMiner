@@ -1,0 +1,291 @@
+"use client";
+
+import { useEffect, useMemo, useRef, useState } from "react";
+
+import { Place } from "@/types/place";
+
+interface ResultsTableProps {
+  places: Place[];
+  isLoading: boolean;
+  selectedPlaceId: string | null;
+  onSelectPlace: (place: Place) => void;
+  onExportSelected: (places: Place[]) => void;
+}
+
+function formatCategory(type: string): string {
+  if (!type) {
+    return "Unknown";
+  }
+
+  return type
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(" ");
+}
+
+function renderStars(rating: number): string {
+  const safeRating = Number.isFinite(rating) ? Math.max(0, Math.min(5, rating)) : 0;
+  const filled = Math.round(safeRating);
+  const empty = 5 - filled;
+  return `${"★".repeat(filled)}${"☆".repeat(empty)}`;
+}
+
+function truncateText(text: string, maxLength: number): string {
+  if (text.length <= maxLength) {
+    return text;
+  }
+
+  return `${text.slice(0, maxLength - 3)}...`;
+}
+
+export default function ResultsTable({
+  places,
+  isLoading,
+  selectedPlaceId,
+  onSelectPlace,
+  onExportSelected,
+}: ResultsTableProps) {
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const selectAllRef = useRef<HTMLInputElement | null>(null);
+
+  const allIds = useMemo(() => places.map((place) => place.placeId), [places]);
+
+  const selectedPlaces = useMemo(() => {
+    return places.filter((place) => selectedIds.has(place.placeId));
+  }, [places, selectedIds]);
+
+  const selectedCountInCurrentRows = selectedPlaces.length;
+  const allSelected = places.length > 0 && selectedCountInCurrentRows === places.length;
+  const someSelected = selectedCountInCurrentRows > 0 && !allSelected;
+
+  useEffect(() => {
+    if (selectAllRef.current) {
+      selectAllRef.current.indeterminate = someSelected;
+    }
+  }, [someSelected]);
+
+  const handleToggleRow = (placeId: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(placeId)) {
+        next.delete(placeId);
+      } else {
+        next.add(placeId);
+      }
+      return next;
+    });
+  };
+
+  const handleToggleAll = () => {
+    if (allSelected || someSelected) {
+      setSelectedIds(new Set());
+      return;
+    }
+
+    setSelectedIds(new Set(allIds));
+  };
+
+  const handleCopy = async (value: string) => {
+    if (!value) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(value);
+    } catch {
+      // Clipboard write can fail in non-secure contexts.
+    }
+  };
+
+  return (
+    <div className="flex h-full flex-col border border-zinc-800 bg-zinc-950">
+      <div className="min-h-0 flex-1 overflow-auto">
+        <table className="min-w-[1320px] w-full border-collapse text-sm text-zinc-100">
+          <thead className="sticky top-0 z-10 bg-gray-900 text-xs uppercase tracking-wide text-zinc-200">
+            <tr>
+              <th className="w-12 border-b border-gray-800 px-3 py-3 text-left">
+                <input
+                  ref={selectAllRef}
+                  type="checkbox"
+                  checked={allSelected}
+                  onChange={handleToggleAll}
+                  aria-label="Select all rows"
+                  className="h-4 w-4 accent-red-500"
+                />
+              </th>
+              <th className="w-12 border-b border-gray-800 px-3 py-3 text-left">#</th>
+              <th className="min-w-[200px] border-b border-gray-800 px-3 py-3 text-left">Business Name</th>
+              <th className="min-w-[150px] border-b border-gray-800 px-3 py-3 text-left">Category</th>
+              <th className="min-w-[230px] border-b border-gray-800 px-3 py-3 text-left">Address</th>
+              <th className="min-w-[150px] border-b border-gray-800 px-3 py-3 text-left">Phone</th>
+              <th className="min-w-[150px] border-b border-gray-800 px-3 py-3 text-left">Rating</th>
+              <th className="min-w-[120px] border-b border-gray-800 px-3 py-3 text-left">Status</th>
+              <th className="min-w-[110px] border-b border-gray-800 px-3 py-3 text-left">Website</th>
+              <th className="min-w-[100px] border-b border-gray-800 px-3 py-3 text-left">Maps Link</th>
+              <th className="min-w-[190px] border-b border-gray-800 px-3 py-3 text-left">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {isLoading &&
+              Array.from({ length: 5 }).map((_, rowIdx) => (
+                <tr key={`skeleton-${rowIdx}`} className="border-b border-gray-800 animate-pulse">
+                  {Array.from({ length: 11 }).map((__, colIdx) => (
+                    <td key={`cell-${rowIdx}-${colIdx}`} className="px-3 py-3">
+                      <div className="h-4 w-full bg-zinc-800" />
+                    </td>
+                  ))}
+                </tr>
+              ))}
+
+            {!isLoading && places.length === 0 && (
+              <tr>
+                <td colSpan={11} className="px-4 py-14 text-center text-zinc-400">
+                  <div className="flex flex-col items-center gap-2">
+                    <span className="text-2xl">🔎</span>
+                    <p className="text-sm font-medium">No results found</p>
+                  </div>
+                </td>
+              </tr>
+            )}
+
+            {!isLoading &&
+              places.map((place, index) => {
+                const isActive = selectedPlaceId === place.placeId;
+                const isChecked = selectedIds.has(place.placeId);
+                const statusLabel = place.openNow === true ? "OPEN" : place.openNow === false ? "CLOSED" : "N/A";
+                const mapsUrl = `https://www.google.com/maps/place/?q=place_id:${place.placeId}`;
+
+                return (
+                  <tr
+                    key={place.placeId}
+                    onClick={() => onSelectPlace(place)}
+                    className={[
+                      "cursor-pointer border-b border-gray-800 hover:bg-gray-800/50",
+                      isActive ? "border-l-4 border-red-500 bg-red-950/20" : "",
+                    ].join(" ")}
+                  >
+                    <td className="px-3 py-3" onClick={(event) => event.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => handleToggleRow(place.placeId)}
+                        aria-label={`Select ${place.name}`}
+                        className="h-4 w-4 accent-red-500"
+                      />
+                    </td>
+
+                    <td className="px-3 py-3 text-zinc-400">{index + 1}</td>
+
+                    <td className="px-3 py-3">
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onSelectPlace(place);
+                        }}
+                        className="font-semibold text-zinc-100 hover:text-red-300"
+                      >
+                        {truncateText(place.name, 42)}
+                      </button>
+                    </td>
+
+                    <td className="px-3 py-3 text-zinc-300">{formatCategory(place.types[0] ?? "")}</td>
+
+                    <td className="px-3 py-3 text-zinc-300" title={place.address}>
+                      {truncateText(place.address, 52)}
+                    </td>
+
+                    <td className="px-3 py-3 text-zinc-300">—</td>
+
+                    <td className="px-3 py-3">
+                      {typeof place.rating === "number" ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-amber-400">{renderStars(place.rating)}</span>
+                          <span className="text-zinc-300">
+                            {place.rating.toFixed(1)} ({place.userRatingsTotal ?? 0})
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-zinc-500">—</span>
+                      )}
+                    </td>
+
+                    <td className="px-3 py-3">
+                      <span
+                        className={[
+                          "inline-flex px-2 py-1 text-xs font-semibold",
+                          statusLabel === "OPEN"
+                            ? "bg-green-900 text-green-300"
+                            : statusLabel === "CLOSED"
+                              ? "bg-red-900 text-red-300"
+                              : "bg-zinc-800 text-zinc-300",
+                        ].join(" ")}
+                      >
+                        {statusLabel}
+                      </span>
+                    </td>
+
+                    <td className="px-3 py-3 text-zinc-400">—</td>
+
+                    <td className="px-3 py-3">
+                      <a
+                        href={mapsUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={(event) => event.stopPropagation()}
+                        className="inline-flex border border-zinc-700 px-2 py-1 text-xs font-semibold text-zinc-100 hover:border-red-400 hover:text-red-300"
+                      >
+                        Open
+                      </a>
+                    </td>
+
+                    <td className="px-3 py-3" onClick={(event) => event.stopPropagation()}>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => void handleCopy("")}
+                          className="border border-zinc-700 px-2 py-1 text-xs font-semibold text-zinc-200 hover:border-red-400 hover:text-red-300"
+                        >
+                          Copy phone
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void handleCopy(place.name)}
+                          className="border border-zinc-700 px-2 py-1 text-xs font-semibold text-zinc-200 hover:border-red-400 hover:text-red-300"
+                        >
+                          Copy name
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+          </tbody>
+        </table>
+      </div>
+
+      {selectedCountInCurrentRows > 0 && (
+        <div className="flex items-center justify-between border-t border-zinc-800 bg-zinc-900 px-4 py-3 text-sm">
+          <span className="text-zinc-200">{selectedCountInCurrentRows} businesses selected</span>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setSelectedIds(new Set())}
+              className="border border-zinc-700 px-3 py-1.5 text-xs font-semibold text-zinc-200 hover:border-zinc-500"
+            >
+              Clear selection
+            </button>
+            <button
+              type="button"
+              onClick={() => onExportSelected(selectedPlaces)}
+              className="border border-red-500 bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-500"
+            >
+              Export Selected
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
