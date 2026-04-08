@@ -106,8 +106,8 @@ export default function ResultsTable({
   };
 
   return (
-    <div className="flex h-full flex-col border border-slate-200 bg-white shadow-sm">
-      <div className="min-h-0 flex-1 overflow-auto">
+    <div className="flex h-full min-w-0 flex-col border border-slate-200 bg-white shadow-sm">
+      <div className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-auto">
         <table className="w-full min-w-330 border-collapse text-sm text-slate-700">
           <thead className="sticky top-0 z-10 bg-slate-800 text-xs uppercase tracking-wide text-slate-100">
             <tr>
