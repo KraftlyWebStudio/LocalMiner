@@ -20,6 +20,11 @@ type GeolocationState = {
   lng: number;
 };
 
+type UiToastState = {
+  message: string;
+  type: "success" | "error";
+};
+
 export default function Home() {
   const [location, setLocation] = useState<GeolocationState | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
@@ -27,6 +32,7 @@ export default function Home() {
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
   const [isMapVisible, setIsMapVisible] = useState(true);
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+  const [uiToast, setUiToast] = useState<UiToastState | null>(null);
 
   useEffect(() => {
     if (typeof navigator === "undefined" || !("geolocation" in navigator)) {
@@ -102,19 +108,24 @@ export default function Home() {
     clearToast,
   } = useExport(places, filteredPlaces);
 
+  const displayedToast = toast ?? uiToast;
+
   useEffect(() => {
-    if (!toast) {
+    if (!displayedToast) {
       return;
     }
 
     const timer = window.setTimeout(() => {
-      clearToast();
+      if (toast) {
+        clearToast();
+      }
+      setUiToast(null);
     }, 3000);
 
     return () => {
       window.clearTimeout(timer);
     };
-  }, [clearToast, toast]);
+  }, [clearToast, displayedToast, toast]);
 
   const handleSearch = useCallback((value: string) => {
     setSearchQuery(value);
@@ -140,6 +151,11 @@ export default function Home() {
     },
     [refetch, setRadius],
   );
+
+  const handleResetFilters = useCallback(() => {
+    resetFilters();
+    setUiToast({ message: "✓ Filters reset", type: "success" });
+  }, [resetFilters]);
 
   const activeFilterChips = useMemo(() => {
     const chips: Array<{ key: string; label: string; onRemove: () => void }> = [];
@@ -233,8 +249,8 @@ export default function Home() {
   }, [filteredPlaces]);
 
   return (
-    <main className="flex h-screen w-screen flex-col bg-transparent text-slate-800">
-      <div className="border-b border-slate-200 bg-white/90 px-5 py-4 backdrop-blur">
+    <main className="flex h-screen w-screen flex-col bg-slate-100 text-slate-800">
+      <div className="border-b border-slate-200 bg-white px-5 py-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-xl font-black uppercase tracking-[0.12em] text-red-500">LocalMiner</h1>
@@ -258,7 +274,16 @@ export default function Home() {
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => setIsMapVisible((prev) => !prev)}
+              onClick={() => {
+                setIsMapVisible((prev) => {
+                  const next = !prev;
+                  setUiToast({
+                    message: next ? "✓ Map shown" : "✓ Map hidden",
+                    type: "success",
+                  });
+                  return next;
+                });
+              }}
               className="border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:border-red-400 hover:text-red-600"
             >
               {isMapVisible ? "Hide Map" : "Show Map"}
@@ -288,13 +313,13 @@ export default function Home() {
             toggleHasWebsite={toggleHasWebsite}
             onRadiusChange={handleRadiusChange}
             toggleCategory={toggleCategory}
-            resetFilters={resetFilters}
+            resetFilters={handleResetFilters}
             isAnyFilterActive={isAnyFilterActive}
           />
         </aside>
 
         <section className="min-h-0 flex-1 space-y-3">
-          <ActiveFilterChips chips={activeFilterChips} onClearAll={resetFilters} />
+          <ActiveFilterChips chips={activeFilterChips} onClearAll={handleResetFilters} />
           <ResultsTable
             places={filteredPlaces}
             isLoading={isLoading}
@@ -359,7 +384,7 @@ export default function Home() {
                 toggleHasWebsite={toggleHasWebsite}
                 onRadiusChange={handleRadiusChange}
                 toggleCategory={toggleCategory}
-                resetFilters={resetFilters}
+                resetFilters={handleResetFilters}
                 isAnyFilterActive={isAnyFilterActive}
               />
             </div>
@@ -388,7 +413,7 @@ export default function Home() {
         }}
       />
 
-      {toast && <Toast message={toast.message} type={toast.type} />}
+      {displayedToast && <Toast message={displayedToast.message} type={displayedToast.type} />}
     </main>
   );
 }

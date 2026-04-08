@@ -10,10 +10,10 @@ export default function Toast({ message, type }: ToastProps) {
     <div className="fixed bottom-4 right-4 z-[60]">
       <div
         className={[
-          "rounded-lg border px-4 py-3 text-sm font-semibold shadow-lg",
+          "border px-4 py-3 text-sm font-semibold shadow-md",
           type === "success"
-            ? "border-green-700 bg-green-900/95 text-green-200"
-            : "border-red-700 bg-red-900/95 text-red-200",
+            ? "border-green-300 bg-green-50 text-green-700"
+            : "border-red-300 bg-red-50 text-red-700",
         ].join(" ")}
       >
         {message}
