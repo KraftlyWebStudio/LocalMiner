@@ -14,6 +14,14 @@ export type Place = {
   types: string[];
   openNow?: boolean;
   distanceMeters?: number;
+  phoneNumber?: string;
+  internationalPhoneNumber?: string;
+  website?: string;
+  mapsUrl?: string;
+  businessStatus?: string;
+  openingHours?: string[];
+  email?: string;
+  socialProfiles?: SocialProfiles;
 };
 
 export type SocialProfiles = {

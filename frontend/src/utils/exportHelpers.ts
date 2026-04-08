@@ -1,17 +1,5 @@
 import { Place } from "@/types/place";
 
-type PlaceWithOptionalFields = Place & {
-  vicinity?: string;
-  formatted_phone_number?: string;
-  user_ratings_total?: number;
-  website?: string;
-  url?: string;
-  business_status?: string;
-  opening_hours?: {
-    open_now?: boolean;
-  };
-};
-
 export interface ExportField {
   key: string;
   label: string;
@@ -40,19 +28,13 @@ export const ALL_EXPORT_FIELDS: ExportField[] = [
     key: "address",
     label: "Address",
     enabled: true,
-    getValue: (place) => {
-      const extended = place as PlaceWithOptionalFields;
-      return extended.vicinity ?? place.address ?? "";
-    },
+    getValue: (place) => place.address ?? "",
   },
   {
     key: "phone",
     label: "Phone Number",
     enabled: true,
-    getValue: (place) => {
-      const extended = place as PlaceWithOptionalFields;
-      return extended.formatted_phone_number ?? "";
-    },
+    getValue: (place) => place.phoneNumber ?? "",
   },
   {
     key: "rating",
@@ -64,47 +46,31 @@ export const ALL_EXPORT_FIELDS: ExportField[] = [
     key: "reviewCount",
     label: "Review Count",
     enabled: true,
-    getValue: (place) => {
-      const extended = place as PlaceWithOptionalFields;
-      return (extended.user_ratings_total ?? place.userRatingsTotal)?.toString() ?? "";
-    },
+    getValue: (place) => place.userRatingsTotal?.toString() ?? "",
   },
   {
     key: "website",
     label: "Website",
     enabled: true,
-    getValue: (place) => {
-      const extended = place as PlaceWithOptionalFields;
-      return extended.website ?? "";
-    },
+    getValue: (place) => place.website ?? "",
   },
   {
     key: "mapsUrl",
     label: "Google Maps URL",
     enabled: true,
-    getValue: (place) => {
-      const extended = place as PlaceWithOptionalFields;
-      return extended.url ?? `https://www.google.com/maps/place/?q=place_id:${place.placeId}`;
-    },
+    getValue: (place) => place.mapsUrl ?? `https://www.google.com/maps/place/?q=place_id:${place.placeId}`,
   },
   {
     key: "status",
     label: "Business Status",
     enabled: true,
-    getValue: (place) => {
-      const extended = place as PlaceWithOptionalFields;
-      return extended.business_status ?? "";
-    },
+    getValue: (place) => place.businessStatus ?? "",
   },
   {
     key: "openNow",
     label: "Open Now",
     enabled: false,
-    getValue: (place) => {
-      const extended = place as PlaceWithOptionalFields;
-      const openNow = extended.opening_hours?.open_now ?? place.openNow;
-      return openNow ? "Yes" : "No";
-    },
+    getValue: (place) => (place.openNow ? "Yes" : "No"),
   },
 ];
 

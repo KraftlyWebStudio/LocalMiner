@@ -5,12 +5,6 @@ import { useCallback, useMemo, useState } from "react";
 import { DEFAULT_FILTERS, FilterState } from "@/types/filters";
 import { Place } from "@/types/place";
 
-type PlaceWithOptionalFields = Place & {
-  phoneNumber?: string;
-  website?: string;
-  distanceMeters?: number;
-};
-
 export function useFilters() {
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
 
@@ -75,8 +69,6 @@ export function useFilters() {
   const applyFilters = useCallback(
     (places: Place[]): Place[] => {
       return places.filter((place) => {
-        const extendedPlace = place as PlaceWithOptionalFields;
-
         if (filters.minRating !== null && (place.rating ?? 0) < filters.minRating) {
           return false;
         }
@@ -85,25 +77,22 @@ export function useFilters() {
           return false;
         }
 
-        if (filters.hasPhone && !extendedPlace.phoneNumber?.trim()) {
+        if (filters.hasPhone && !place.phoneNumber?.trim()) {
           return false;
         }
 
-        if (filters.hasWebsite && !extendedPlace.website?.trim()) {
+        if (filters.hasWebsite && !place.website?.trim()) {
           return false;
         }
 
         if (
           filters.categories.length > 0 &&
-          !filters.categories.includes((place.types[0] ?? "unknown").toLowerCase())
+          !place.types.some((type) => filters.categories.includes(type.toLowerCase()))
         ) {
           return false;
         }
 
-        if (
-          typeof extendedPlace.distanceMeters === "number" &&
-          extendedPlace.distanceMeters > filters.radius
-        ) {
+        if (typeof place.distanceMeters === "number" && place.distanceMeters > filters.radius) {
           return false;
         }
 

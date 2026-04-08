@@ -176,7 +176,7 @@ export default function Home() {
     triggerExport,
     toast,
     clearToast,
-  } = useExport(placesWithDistance, sortedPlaces);
+  } = useExport(sortedPlaces);
 
   const displayedToast = toast ?? uiToast;
 

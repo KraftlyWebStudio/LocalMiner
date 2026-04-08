@@ -23,7 +23,7 @@ function cloneDefaultFields(): ExportField[] {
   return ALL_EXPORT_FIELDS.map((field) => ({ ...field }));
 }
 
-export function useExport(_allPlaces: Place[], filteredPlaces: Place[]) {
+export function useExport(filteredPlaces: Place[]) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [exportMode, setExportMode] = useState<ExportMode>("all");
   const [selectedPlaces, setSelectedPlaces] = useState<Place[]>([]);
@@ -111,11 +111,14 @@ export function useExport(_allPlaces: Place[], filteredPlaces: Place[]) {
     setShowSuccess(false);
 
     try {
+      let usedFormat: ExportFormat = exportFormat;
+
       if (exportFormat === "xlsx") {
         try {
           await exportToXLSX(placesToExport, enabledFields, resolvedFileName);
         } catch {
           exportToCSV(placesToExport, enabledFields, resolvedFileName);
+          usedFormat = "csv";
           setToast({ message: "✗ Excel export unavailable. Downloaded CSV instead.", type: "error" });
         }
       } else {
@@ -124,7 +127,7 @@ export function useExport(_allPlaces: Place[], filteredPlaces: Place[]) {
 
       setShowSuccess(true);
       setToast({
-        message: `✓ Exported ${placesToExport.length} businesses to ${exportFormat.toUpperCase()}`,
+        message: `✓ Exported ${placesToExport.length} businesses to ${usedFormat.toUpperCase()}`,
         type: "success",
       });
 

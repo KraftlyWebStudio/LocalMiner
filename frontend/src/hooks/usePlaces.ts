@@ -20,6 +20,52 @@ type UsePlacesResult = {
   refetch: () => void;
 };
 
+const DETAIL_BATCH_SIZE = 8;
+
+function mergeWithDetails(place: Place, details: PlaceDetails): Place {
+  return {
+    ...place,
+    phoneNumber: details.phoneNumber,
+    internationalPhoneNumber: details.internationalPhoneNumber,
+    website: details.website,
+    mapsUrl: details.mapsUrl,
+    businessStatus: details.businessStatus,
+    openingHours: details.openingHours,
+    openNow: details.openNow ?? place.openNow,
+  };
+}
+
+async function enrichPlacesWithDetails(places: Place[]): Promise<Place[]> {
+  if (places.length === 0) {
+    return places;
+  }
+
+  const enriched = [...places];
+
+  for (let index = 0; index < places.length; index += DETAIL_BATCH_SIZE) {
+    const batch = places.slice(index, index + DETAIL_BATCH_SIZE);
+    const settledBatch = await Promise.allSettled(
+      batch.map((place) => getPlaceDetails(place.placeId)),
+    );
+
+    settledBatch.forEach((result, batchIndex) => {
+      if (result.status !== "fulfilled") {
+        return;
+      }
+
+      const targetIndex = index + batchIndex;
+      const existing = enriched[targetIndex];
+      if (!existing) {
+        return;
+      }
+
+      enriched[targetIndex] = mergeWithDetails(existing, result.value);
+    });
+  }
+
+  return enriched;
+}
+
 export function usePlaces({
   latitude,
   longitude,
@@ -31,12 +77,14 @@ export function usePlaces({
   const placesQuery = useQuery({
     queryKey: ["places", latitude, longitude, trimmedQuery, radius],
     enabled: latitude !== null && longitude !== null,
+    placeholderData: (previousData) => previousData,
     queryFn: async () => {
       if (latitude === null || longitude === null) {
         return [];
       }
 
-      return getNearbyPlaces(latitude, longitude, trimmedQuery, radius);
+      const nearbyPlaces = await getNearbyPlaces(latitude, longitude, trimmedQuery, radius);
+      return enrichPlacesWithDetails(nearbyPlaces);
     },
   });
 

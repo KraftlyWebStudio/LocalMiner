@@ -156,7 +156,9 @@ export default function ResultsTable({
                 const isActive = selectedPlaceId === place.placeId;
                 const isChecked = selectedIds.has(place.placeId);
                 const statusLabel = place.openNow === true ? "OPEN" : place.openNow === false ? "CLOSED" : "N/A";
-                const mapsUrl = `https://www.google.com/maps/place/?q=place_id:${place.placeId}`;
+                const mapsUrl = place.mapsUrl ?? `https://www.google.com/maps/place/?q=place_id:${place.placeId}`;
+                const phoneValue = place.phoneNumber ?? "";
+                const websiteValue = place.website ?? "";
 
                 return (
                   <tr
@@ -201,7 +203,9 @@ export default function ResultsTable({
                       {truncateText(place.address, 52)}
                     </td>
 
-                    <td className="px-3 py-3 text-slate-400">—</td>
+                    <td className="px-3 py-3 text-slate-600">
+                      {phoneValue ? truncateText(phoneValue, 22) : <span className="text-slate-400">—</span>}
+                    </td>
 
                     <td className="px-3 py-3">
                       {typeof place.rating === "number" ? (
@@ -231,7 +235,21 @@ export default function ResultsTable({
                       </span>
                     </td>
 
-                    <td className="px-3 py-3 text-slate-400">—</td>
+                    <td className="px-3 py-3 text-slate-600" title={websiteValue || undefined}>
+                      {websiteValue ? (
+                        <a
+                          href={websiteValue}
+                          target="_blank"
+                          rel="noreferrer"
+                          onClick={(event) => event.stopPropagation()}
+                          className="hover:text-red-600"
+                        >
+                          {truncateText(websiteValue, 30)}
+                        </a>
+                      ) : (
+                        <span className="text-slate-400">—</span>
+                      )}
+                    </td>
 
                     <td className="px-3 py-3">
                       <a
@@ -249,7 +267,8 @@ export default function ResultsTable({
                       <div className="flex gap-2">
                         <button
                           type="button"
-                          onClick={() => void handleCopy("")}
+                          onClick={() => void handleCopy(phoneValue)}
+                          disabled={!phoneValue}
                           className="border border-slate-300 bg-white px-2 py-1 text-xs font-semibold text-slate-700 hover:border-red-400 hover:text-red-600"
                         >
                           Copy phone
