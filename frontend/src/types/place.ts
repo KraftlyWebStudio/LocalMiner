@@ -13,6 +13,7 @@ export type Place = {
   location: Coordinates;
   types: string[];
   openNow?: boolean;
+  distanceMeters?: number;
 };
 
 export type SocialProfiles = {

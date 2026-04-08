@@ -100,7 +100,7 @@ export default function ResultsTable({
   return (
     <div className="flex h-full flex-col border border-slate-200 bg-white shadow-sm">
       <div className="min-h-0 flex-1 overflow-auto">
-        <table className="w-full min-w-[1320px] border-collapse text-sm text-slate-700">
+        <table className="w-full min-w-330 border-collapse text-sm text-slate-700">
           <thead className="sticky top-0 z-10 bg-slate-800 text-xs uppercase tracking-wide text-slate-100">
             <tr>
               <th className="sticky left-0 z-10 w-12 border-b border-slate-700 bg-slate-800 px-3 py-3 text-left">
@@ -114,17 +114,17 @@ export default function ResultsTable({
                 />
               </th>
               <th className="w-12 border-b border-slate-700 px-3 py-3 text-left">#</th>
-              <th className="sticky left-12 z-10 min-w-[200px] border-b border-slate-700 bg-slate-800 px-3 py-3 text-left">
+              <th className="sticky left-12 z-10 min-w-50 border-b border-slate-700 bg-slate-800 px-3 py-3 text-left">
                 Business Name
               </th>
-              <th className="min-w-[150px] border-b border-slate-700 px-3 py-3 text-left">Category</th>
-              <th className="min-w-[230px] border-b border-slate-700 px-3 py-3 text-left">Address</th>
-              <th className="min-w-[150px] border-b border-slate-700 px-3 py-3 text-left">Phone</th>
-              <th className="min-w-[150px] border-b border-slate-700 px-3 py-3 text-left">Rating</th>
-              <th className="min-w-[120px] border-b border-slate-700 px-3 py-3 text-left">Status</th>
-              <th className="min-w-[110px] border-b border-slate-700 px-3 py-3 text-left">Website</th>
-              <th className="min-w-[100px] border-b border-slate-700 px-3 py-3 text-left">Maps Link</th>
-              <th className="min-w-[190px] border-b border-slate-700 px-3 py-3 text-left">Actions</th>
+              <th className="min-w-37.5 border-b border-slate-700 px-3 py-3 text-left">Category</th>
+              <th className="min-w-57.5 border-b border-slate-700 px-3 py-3 text-left">Address</th>
+              <th className="min-w-37.5 border-b border-slate-700 px-3 py-3 text-left">Phone</th>
+              <th className="min-w-37.5 border-b border-slate-700 px-3 py-3 text-left">Rating</th>
+              <th className="min-w-30 border-b border-slate-700 px-3 py-3 text-left">Status</th>
+              <th className="min-w-27.5 border-b border-slate-700 px-3 py-3 text-left">Website</th>
+              <th className="min-w-25 border-b border-slate-700 px-3 py-3 text-left">Maps Link</th>
+              <th className="min-w-47.5 border-b border-slate-700 px-3 py-3 text-left">Actions</th>
             </tr>
           </thead>
 
@@ -168,7 +168,7 @@ export default function ResultsTable({
                     ].join(" ")}
                   >
                     <td
-                      className="sticky left-0 z-[1] bg-white px-3 py-3"
+                      className="sticky left-0 z-1 bg-white px-3 py-3"
                       onClick={(event) => event.stopPropagation()}
                     >
                       <input
@@ -182,7 +182,7 @@ export default function ResultsTable({
 
                     <td className="px-3 py-3 text-slate-500">{index + 1}</td>
 
-                    <td className="sticky left-12 z-[1] bg-white px-3 py-3">
+                    <td className="sticky left-12 z-1 bg-white px-3 py-3">
                       <button
                         type="button"
                         onClick={(event) => {

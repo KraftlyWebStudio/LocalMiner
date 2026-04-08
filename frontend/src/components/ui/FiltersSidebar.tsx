@@ -144,8 +144,8 @@ export default function FiltersSidebar({
             </span>
           </div>
 
-          <div className="grid grid-cols-4 gap-2">
-            {[2, 5, 10, 20].map((km) => {
+          <div className="grid grid-cols-3 gap-2 lg:grid-cols-6">
+            {[2, 5, 10, 20, 50, 100].map((km) => {
               const meters = km * 1000;
               const active = filters.radius === meters;
               return (
@@ -169,7 +169,7 @@ export default function FiltersSidebar({
           <input
             type="range"
             min={1000}
-            max={20000}
+            max={100000}
             step={500}
             value={filters.radius}
             onChange={(event) => onRadiusChange(Number(event.target.value))}

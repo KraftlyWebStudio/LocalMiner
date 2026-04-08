@@ -28,6 +28,30 @@ type UiToastState = {
 };
 
 const ITEMS_PER_PAGE = 100;
+const FETCH_RADIUS_METERS = 100_000;
+
+type PlaceWithDistance = Place & {
+  distanceMeters?: number;
+};
+
+function calculateDistanceMeters(
+  origin: GeolocationState,
+  destination: { lat: number; lng: number },
+): number {
+  const earthRadiusMeters = 6_371_000;
+  const latitudeDelta = ((destination.lat - origin.lat) * Math.PI) / 180;
+  const longitudeDelta = ((destination.lng - origin.lng) * Math.PI) / 180;
+  const startLatitude = (origin.lat * Math.PI) / 180;
+  const endLatitude = (destination.lat * Math.PI) / 180;
+
+  const a =
+    Math.sin(latitudeDelta / 2) * Math.sin(latitudeDelta / 2) +
+    Math.sin(longitudeDelta / 2) * Math.sin(longitudeDelta / 2) *
+      Math.cos(startLatitude) *
+      Math.cos(endLatitude);
+
+  return 2 * earthRadiusMeters * Math.asin(Math.sqrt(a));
+}
 
 export default function Home() {
   const [location, setLocation] = useState<GeolocationState | null>(null);
@@ -86,26 +110,50 @@ export default function Home() {
     applyFilters,
   } = useFilters();
 
-  const { places, isLoading, errorMessage, refetch } = usePlaces({
+  const { places, isLoading, errorMessage } = usePlaces({
     latitude: location?.lat ?? null,
     longitude: location?.lng ?? null,
     query: searchQuery,
-    radius: filters.radius,
+    radius: FETCH_RADIUS_METERS,
   });
 
-  const filteredPlaces = useMemo(() => applyFilters(places), [applyFilters, places]);
+  const placesWithDistance = useMemo((): PlaceWithDistance[] => {
+    if (!location) {
+      return places;
+    }
+
+    return places.map((place) => ({
+      ...place,
+      distanceMeters: calculateDistanceMeters(location, place.location),
+    }));
+  }, [location, places]);
+
+  const filteredPlaces = useMemo(() => applyFilters(placesWithDistance), [applyFilters, placesWithDistance]);
+
+  const sortedPlaces = useMemo(() => {
+    return [...filteredPlaces].sort((left, right) => {
+      const leftDistance = left.distanceMeters ?? Number.POSITIVE_INFINITY;
+      const rightDistance = right.distanceMeters ?? Number.POSITIVE_INFINITY;
+
+      if (leftDistance !== rightDistance) {
+        return leftDistance - rightDistance;
+      }
+
+      return left.name.localeCompare(right.name);
+    });
+  }, [filteredPlaces]);
 
   const totalPages = useMemo(() => {
-    return Math.max(1, Math.ceil(filteredPlaces.length / ITEMS_PER_PAGE));
-  }, [filteredPlaces.length]);
+    return Math.max(1, Math.ceil(sortedPlaces.length / ITEMS_PER_PAGE));
+  }, [sortedPlaces.length]);
 
   const clampedPage = Math.min(currentPage, totalPages);
 
   const paginatedPlaces = useMemo(() => {
     const start = (clampedPage - 1) * ITEMS_PER_PAGE;
     const end = start + ITEMS_PER_PAGE;
-    return filteredPlaces.slice(start, end);
-  }, [clampedPage, filteredPlaces]);
+    return sortedPlaces.slice(start, end);
+  }, [clampedPage, sortedPlaces]);
 
   const {
     isModalOpen,
@@ -128,7 +176,7 @@ export default function Home() {
     triggerExport,
     toast,
     clearToast,
-  } = useExport(places, filteredPlaces);
+  } = useExport(placesWithDistance, sortedPlaces);
 
   const displayedToast = toast ?? uiToast;
 
@@ -189,17 +237,13 @@ export default function Home() {
       return null;
     }
 
-    return filteredPlaces.find((place) => place.placeId === selectedPlaceId) ?? null;
-  }, [filteredPlaces, selectedPlaceId]);
+    return sortedPlaces.find((place) => place.placeId === selectedPlaceId) ?? null;
+  }, [selectedPlaceId, sortedPlaces]);
 
-  const handleRadiusChange = useCallback(
-    (meters: number) => {
-      setRadius(meters);
-      setCurrentPage(1);
-      refetch();
-    },
-    [refetch, setRadius],
-  );
+  const handleRadiusChange = useCallback((meters: number) => {
+    setRadius(meters);
+    setCurrentPage(1);
+  }, [setRadius]);
 
   const handleResetFilters = useCallback(() => {
     resetFilters();
@@ -279,14 +323,14 @@ export default function Home() {
       return searchQuery ? `Searching for ${searchQuery} nearby...` : "Searching nearby places...";
     }
     return searchQuery
-      ? `${filteredPlaces.length} places found for \"${searchQuery}\"`
-      : `${filteredPlaces.length} places found nearby`;
-  }, [errorMessage, filteredPlaces.length, isLoading, location, locationError, searchQuery]);
+      ? `${sortedPlaces.length} places found for "${searchQuery}"`
+      : `${sortedPlaces.length} places found nearby`;
+  }, [errorMessage, isLoading, location, locationError, searchQuery, sortedPlaces.length]);
 
   const kpiCards = useMemo(() => {
-    const total = filteredPlaces.length;
-    const openNowCount = filteredPlaces.filter((place) => place.openNow).length;
-    const rated = filteredPlaces.filter((place) => typeof place.rating === "number");
+    const total = sortedPlaces.length;
+    const openNowCount = sortedPlaces.filter((place) => place.openNow).length;
+    const rated = sortedPlaces.filter((place) => typeof place.rating === "number");
     const avgRating =
       rated.length > 0
         ? (rated.reduce((sum, place) => sum + (place.rating ?? 0), 0) / rated.length).toFixed(1)
@@ -297,7 +341,7 @@ export default function Home() {
       { label: "Open Now", value: openNowCount.toString() },
       { label: "Avg Rating", value: avgRating },
     ];
-  }, [filteredPlaces]);
+  }, [sortedPlaces]);
 
   return (
     <main className="flex h-screen w-screen flex-col bg-slate-100 text-slate-800">
@@ -365,11 +409,11 @@ export default function Home() {
             <button
               type="button"
               onClick={openModalForAll}
-              disabled={filteredPlaces.length === 0}
+              disabled={sortedPlaces.length === 0}
               className="inline-flex items-center gap-2 border border-slate-300 bg-white px-4 py-2 text-sm text-slate-700 hover:border-red-400 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <span>⬇</span>
-              <span>Export All ({filteredPlaces.length})</span>
+              <span>Export All ({sortedPlaces.length})</span>
             </button>
           </div>
         </div>
@@ -378,8 +422,8 @@ export default function Home() {
       <div className="hidden px-5 pt-4 lg:block">
         <FiltersSidebar
           filters={filters}
-          allPlaces={places}
-          resultCount={filteredPlaces.length}
+          allPlaces={placesWithDistance}
+          resultCount={sortedPlaces.length}
           setMinRating={setMinRating}
           toggleOpenNow={toggleOpenNow}
           toggleHasPhone={toggleHasPhone}
@@ -480,8 +524,8 @@ export default function Home() {
             <div className="h-[calc(100%-49px)] p-3">
               <FiltersSidebar
                 filters={filters}
-                allPlaces={places}
-                resultCount={filteredPlaces.length}
+                allPlaces={placesWithDistance}
+                resultCount={sortedPlaces.length}
                 setMinRating={setMinRating}
                 toggleOpenNow={toggleOpenNow}
                 toggleHasPhone={toggleHasPhone}
