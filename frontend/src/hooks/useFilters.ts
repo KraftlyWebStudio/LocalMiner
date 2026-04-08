@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 
-import { DEFAULT_FILTERS, FilterState } from "@/types/filters";
+import { DEFAULT_FILTERS, FilterState, TriStateFilter } from "@/types/filters";
 import { Place } from "@/types/place";
 
 export function useFilters() {
@@ -12,16 +12,16 @@ export function useFilters() {
     setFilters((prev) => ({ ...prev, minRating: rating }));
   }, []);
 
-  const toggleOpenNow = useCallback(() => {
-    setFilters((prev) => ({ ...prev, openNow: !prev.openNow }));
+  const setOpenNowFilter = useCallback((value: TriStateFilter) => {
+    setFilters((prev) => ({ ...prev, openNow: value }));
   }, []);
 
-  const toggleHasPhone = useCallback(() => {
-    setFilters((prev) => ({ ...prev, hasPhone: !prev.hasPhone }));
+  const setHasPhoneFilter = useCallback((value: TriStateFilter) => {
+    setFilters((prev) => ({ ...prev, hasPhone: value }));
   }, []);
 
-  const toggleHasWebsite = useCallback(() => {
-    setFilters((prev) => ({ ...prev, hasWebsite: !prev.hasWebsite }));
+  const setHasWebsiteFilter = useCallback((value: TriStateFilter) => {
+    setFilters((prev) => ({ ...prev, hasWebsite: value }));
   }, []);
 
   const setRadius = useCallback((meters: number) => {
@@ -47,9 +47,9 @@ export function useFilters() {
   const isAnyFilterActive = useMemo(() => {
     return (
       filters.minRating !== null ||
-      filters.openNow ||
-      filters.hasPhone ||
-      filters.hasWebsite ||
+      filters.openNow !== "any" ||
+      filters.hasPhone !== "any" ||
+      filters.hasWebsite !== "any" ||
       filters.radius !== DEFAULT_FILTERS.radius ||
       filters.categories.length > 0
     );
@@ -58,9 +58,9 @@ export function useFilters() {
   const activeFilterCount = useMemo(() => {
     let count = 0;
     if (filters.minRating !== null) count += 1;
-    if (filters.openNow) count += 1;
-    if (filters.hasPhone) count += 1;
-    if (filters.hasWebsite) count += 1;
+    if (filters.openNow !== "any") count += 1;
+    if (filters.hasPhone !== "any") count += 1;
+    if (filters.hasWebsite !== "any") count += 1;
     if (filters.radius !== DEFAULT_FILTERS.radius) count += 1;
     count += filters.categories.length;
     return count;
@@ -73,15 +73,29 @@ export function useFilters() {
           return false;
         }
 
-        if (filters.openNow && place.openNow !== true) {
+        if (filters.openNow === "yes" && place.openNow !== true) {
           return false;
         }
 
-        if (filters.hasPhone && !place.phoneNumber?.trim()) {
+        if (filters.openNow === "no" && place.openNow !== false) {
           return false;
         }
 
-        if (filters.hasWebsite && !place.website?.trim()) {
+        const hasPhone = Boolean(place.phoneNumber?.trim());
+        if (filters.hasPhone === "yes" && !hasPhone) {
+          return false;
+        }
+
+        if (filters.hasPhone === "no" && hasPhone) {
+          return false;
+        }
+
+        const hasWebsite = Boolean(place.website?.trim());
+        if (filters.hasWebsite === "yes" && !hasWebsite) {
+          return false;
+        }
+
+        if (filters.hasWebsite === "no" && hasWebsite) {
           return false;
         }
 
@@ -105,9 +119,9 @@ export function useFilters() {
   return {
     filters,
     setMinRating,
-    toggleOpenNow,
-    toggleHasPhone,
-    toggleHasWebsite,
+    setOpenNowFilter,
+    setHasPhoneFilter,
+    setHasWebsiteFilter,
     setRadius,
     toggleCategory,
     resetFilters,

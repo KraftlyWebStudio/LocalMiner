@@ -1,8 +1,10 @@
+export type TriStateFilter = "any" | "yes" | "no";
+
 export type FilterState = {
   minRating: number | null;
-  openNow: boolean;
-  hasPhone: boolean;
-  hasWebsite: boolean;
+  openNow: TriStateFilter;
+  hasPhone: TriStateFilter;
+  hasWebsite: TriStateFilter;
   radius: number;
   categories: string[];
 };
@@ -12,9 +14,9 @@ export const MAX_RADIUS_METERS = 50_000;
 
 export const DEFAULT_FILTERS: FilterState = {
   minRating: null,
-  openNow: false,
-  hasPhone: false,
-  hasWebsite: false,
+  openNow: "any",
+  hasPhone: "any",
+  hasWebsite: "any",
   radius: 20000,
   categories: [],
 };

@@ -6,7 +6,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import ActiveFilterChips from "@/components/ui/ActiveFilterChips";
 import ExportModal from "@/components/ui/ExportModal";
 import FiltersSidebar from "@/components/ui/FiltersSidebar";
-import Map from "@/components/ui/Map";
 import ResultsTable from "@/components/ui/ResultsTable";
 import SearchBar from "@/components/ui/SearchBar";
 import Toast from "@/components/ui/Toast";
@@ -61,7 +60,6 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [isMapVisible, setIsMapVisible] = useState(true);
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const [uiToast, setUiToast] = useState<UiToastState | null>(null);
 
@@ -98,9 +96,9 @@ export default function Home() {
   const {
     filters,
     setMinRating,
-    toggleOpenNow,
-    toggleHasPhone,
-    toggleHasWebsite,
+    setOpenNowFilter,
+    setHasPhoneFilter,
+    setHasWebsiteFilter,
     setRadius,
     toggleCategory,
     resetFilters,
@@ -262,16 +260,28 @@ export default function Home() {
       });
     }
 
-    if (filters.openNow) {
-      chips.push({ key: "open-now", label: "Open Now", onRemove: toggleOpenNow });
+    if (filters.openNow !== "any") {
+      chips.push({
+        key: "open-now",
+        label: `Open Now: ${filters.openNow === "yes" ? "Yes" : "No"}`,
+        onRemove: () => setOpenNowFilter("any"),
+      });
     }
 
-    if (filters.hasPhone) {
-      chips.push({ key: "has-phone", label: "Has Phone", onRemove: toggleHasPhone });
+    if (filters.hasPhone !== "any") {
+      chips.push({
+        key: "has-phone",
+        label: `Has Phone: ${filters.hasPhone === "yes" ? "Yes" : "No"}`,
+        onRemove: () => setHasPhoneFilter("any"),
+      });
     }
 
-    if (filters.hasWebsite) {
-      chips.push({ key: "has-website", label: "Has Website", onRemove: toggleHasWebsite });
+    if (filters.hasWebsite !== "any") {
+      chips.push({
+        key: "has-website",
+        label: `Has Website: ${filters.hasWebsite === "yes" ? "Yes" : "No"}`,
+        onRemove: () => setHasWebsiteFilter("any"),
+      });
     }
 
     if (filters.radius !== DEFAULT_FILTERS.radius) {
@@ -303,11 +313,11 @@ export default function Home() {
     filters.openNow,
     filters.radius,
     handleRadiusChange,
+    setHasPhoneFilter,
+    setHasWebsiteFilter,
+    setOpenNowFilter,
     setMinRating,
     toggleCategory,
-    toggleHasPhone,
-    toggleHasWebsite,
-    toggleOpenNow,
   ]);
 
   const listHeader = useMemo(() => {
@@ -393,22 +403,6 @@ export default function Home() {
           <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
-              onClick={() => {
-                setIsMapVisible((prev) => {
-                  const next = !prev;
-                  setUiToast({
-                    message: next ? "✓ Map shown" : "✓ Map hidden",
-                    type: "success",
-                  });
-                  return next;
-                });
-              }}
-              className="border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:border-red-400 hover:text-red-600"
-            >
-              {isMapVisible ? "Hide Map" : "Show Map"}
-            </button>
-            <button
-              type="button"
               onClick={openModalForAll}
               disabled={sortedPlaces.length === 0}
               className="inline-flex items-center gap-2 border border-slate-300 bg-white px-4 py-2 text-sm text-slate-700 hover:border-red-400 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
@@ -426,9 +420,9 @@ export default function Home() {
           allPlaces={placesWithDistance}
           resultCount={sortedPlaces.length}
           setMinRating={setMinRating}
-          toggleOpenNow={toggleOpenNow}
-          toggleHasPhone={toggleHasPhone}
-          toggleHasWebsite={toggleHasWebsite}
+          setOpenNowFilter={setOpenNowFilter}
+          setHasPhoneFilter={setHasPhoneFilter}
+          setHasWebsiteFilter={setHasWebsiteFilter}
           onRadiusChange={handleRadiusChange}
           toggleCategory={toggleCategory}
           resetFilters={handleResetFilters}
@@ -447,47 +441,35 @@ export default function Home() {
             onExportSelected={openModalForSelected}
           />
 
-          {!isLoading && filteredPlaces.length > ITEMS_PER_PAGE && (
-            <div className="flex items-center justify-between border border-slate-200 bg-white px-4 py-3 text-sm">
-              <p className="text-slate-600">
-                Showing {(clampedPage - 1) * ITEMS_PER_PAGE + 1}-
-                {Math.min(clampedPage * ITEMS_PER_PAGE, filteredPlaces.length)} of {filteredPlaces.length}
-              </p>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-                  disabled={clampedPage === 1}
-                  className="border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 disabled:opacity-50"
-                >
-                  Prev
-                </button>
-                <span className="text-xs font-semibold text-slate-600">
-                  Page {clampedPage} / {totalPages}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-                  disabled={clampedPage === totalPages}
-                  className="border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 disabled:opacity-50"
-                >
-                  Next
-                </button>
-              </div>
+          <div className="flex items-center justify-between border border-slate-200 bg-white px-4 py-3 text-sm">
+            <p className="text-slate-600">
+              {filteredPlaces.length === 0
+                ? "No results"
+                : `Showing ${(clampedPage - 1) * ITEMS_PER_PAGE + 1}-${Math.min(clampedPage * ITEMS_PER_PAGE, filteredPlaces.length)} of ${filteredPlaces.length}`}
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                disabled={clampedPage === 1}
+                className="border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 disabled:opacity-50"
+              >
+                Prev
+              </button>
+              <span className="text-xs font-semibold text-slate-600">
+                Page {clampedPage} / {totalPages}
+              </span>
+              <button
+                type="button"
+                onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                disabled={clampedPage === totalPages}
+                className="border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 disabled:opacity-50"
+              >
+                Next
+              </button>
             </div>
-          )}
+          </div>
         </section>
-
-        {isMapVisible && (
-          <aside className="mt-4 h-[40vh] border border-slate-200 bg-white shadow-sm lg:mt-0 lg:h-full lg:w-[38%]">
-            <Map
-              places={paginatedPlaces}
-              center={location}
-              selectedPlaceId={selectedPlaceInList?.placeId ?? null}
-              onSelectPlace={handlePlaceSelect}
-            />
-          </aside>
-        )}
       </div>
 
       <button
@@ -528,9 +510,9 @@ export default function Home() {
                 allPlaces={placesWithDistance}
                 resultCount={sortedPlaces.length}
                 setMinRating={setMinRating}
-                toggleOpenNow={toggleOpenNow}
-                toggleHasPhone={toggleHasPhone}
-                toggleHasWebsite={toggleHasWebsite}
+                setOpenNowFilter={setOpenNowFilter}
+                setHasPhoneFilter={setHasPhoneFilter}
+                setHasWebsiteFilter={setHasWebsiteFilter}
                 onRadiusChange={handleRadiusChange}
                 toggleCategory={toggleCategory}
                 resetFilters={handleResetFilters}

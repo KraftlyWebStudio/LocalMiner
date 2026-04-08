@@ -1,6 +1,6 @@
 "use client";
 
-import { FilterState, MAX_RADIUS_METERS, MIN_RADIUS_METERS } from "@/types/filters";
+import { FilterState, MAX_RADIUS_METERS, MIN_RADIUS_METERS, TriStateFilter } from "@/types/filters";
 import { Place } from "@/types/place";
 
 type FiltersSidebarProps = {
@@ -8,9 +8,9 @@ type FiltersSidebarProps = {
   allPlaces: Place[];
   resultCount: number;
   setMinRating: (rating: number | null) => void;
-  toggleOpenNow: () => void;
-  toggleHasPhone: () => void;
-  toggleHasWebsite: () => void;
+  setOpenNowFilter: (value: TriStateFilter) => void;
+  setHasPhoneFilter: (value: TriStateFilter) => void;
+  setHasWebsiteFilter: (value: TriStateFilter) => void;
   onRadiusChange: (meters: number) => void;
   toggleCategory: (category: string) => void;
   resetFilters: () => void;
@@ -24,38 +24,42 @@ function formatCategory(type: string): string {
     .join(" ");
 }
 
-function FilterToggle({
+function TriStateControl({
   label,
-  checked,
-  onToggle,
+  value,
+  onChange,
 }: {
   label: string;
-  checked: boolean;
-  onToggle: () => void;
+  value: TriStateFilter;
+  onChange: (next: TriStateFilter) => void;
 }) {
+  const options: TriStateFilter[] = ["any", "yes", "no"];
+
   return (
-    <button
-      type="button"
-      onClick={onToggle}
-      className={[
-        "flex w-full items-center justify-between border px-3 py-2 text-sm font-medium transition-colors",
-        checked
-          ? "border-red-400 bg-red-50 text-red-700"
-          : "border-slate-200 bg-white text-slate-700 hover:border-slate-300",
-      ].join(" ")}
-    >
-      <span>{label}</span>
-      <span
-        className={[
-          "inline-flex h-5 w-5 items-center justify-center border text-xs font-bold",
-          checked
-            ? "border-red-500 bg-red-600 text-white"
-            : "border-slate-300 bg-white text-slate-400",
-        ].join(" ")}
-      >
-        {checked ? "✓" : ""}
-      </span>
-    </button>
+    <div className="space-y-1">
+      <p className="text-xs font-semibold text-slate-600">{label}</p>
+      <div className="grid grid-cols-3 gap-1">
+        {options.map((option) => {
+          const isActive = value === option;
+          const optionLabel = option === "any" ? "Any" : option === "yes" ? "Yes" : "No";
+          return (
+            <button
+              key={option}
+              type="button"
+              onClick={() => onChange(option)}
+              className={[
+                "border px-2 py-1 text-xs font-semibold",
+                isActive
+                  ? "border-red-500 bg-red-600 text-white"
+                  : "border-slate-300 bg-white text-slate-700 hover:border-slate-400",
+              ].join(" ")}
+            >
+              {optionLabel}
+            </button>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 
@@ -64,9 +68,9 @@ export default function FiltersSidebar({
   allPlaces,
   resultCount,
   setMinRating,
-  toggleOpenNow,
-  toggleHasPhone,
-  toggleHasWebsite,
+  setOpenNowFilter,
+  setHasPhoneFilter,
+  setHasWebsiteFilter,
   onRadiusChange,
   toggleCategory,
   resetFilters,
@@ -82,7 +86,8 @@ export default function FiltersSidebar({
 
   const categories = Array.from(categorySet).sort();
 
-  const hasBusinessFilters = filters.openNow || filters.hasPhone || filters.hasWebsite;
+  const hasBusinessFilters =
+    filters.openNow !== "any" || filters.hasPhone !== "any" || filters.hasWebsite !== "any";
 
   return (
     <aside className="flex h-full w-full flex-col border border-slate-200 bg-white shadow-sm">
@@ -131,9 +136,9 @@ export default function FiltersSidebar({
         <section className="space-y-2 border border-slate-200 bg-slate-50 p-3">
           <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-slate-500">Business Filters</p>
           <div className="space-y-2">
-            <FilterToggle label="Open Now" checked={filters.openNow} onToggle={toggleOpenNow} />
-            <FilterToggle label="Has Phone" checked={filters.hasPhone} onToggle={toggleHasPhone} />
-            <FilterToggle label="Has Website" checked={filters.hasWebsite} onToggle={toggleHasWebsite} />
+            <TriStateControl label="Open Now" value={filters.openNow} onChange={setOpenNowFilter} />
+            <TriStateControl label="Has Phone" value={filters.hasPhone} onChange={setHasPhoneFilter} />
+            <TriStateControl label="Has Website" value={filters.hasWebsite} onChange={setHasWebsiteFilter} />
           </div>
           {hasBusinessFilters && <p className="text-xs font-semibold text-red-600">Active</p>}
         </section>
