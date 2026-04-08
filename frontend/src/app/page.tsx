@@ -4,10 +4,13 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import ActiveFilterChips from "@/components/ui/ActiveFilterChips";
+import ExportModal from "@/components/ui/ExportModal";
 import FiltersSidebar from "@/components/ui/FiltersSidebar";
 import Map from "@/components/ui/Map";
 import ResultsTable from "@/components/ui/ResultsTable";
 import SearchBar from "@/components/ui/SearchBar";
+import Toast from "@/components/ui/Toast";
+import { useExport } from "@/hooks/useExport";
 import { useFilters } from "@/hooks/useFilters";
 import { usePlaces } from "@/hooks/usePlaces";
 import { Place } from "@/types/place";
@@ -75,6 +78,43 @@ export default function Home() {
   } = useFilters();
 
   const filteredPlaces = useMemo(() => applyFilters(places), [applyFilters, places]);
+
+  const {
+    isModalOpen,
+    exportMode,
+    exportCount,
+    placesToExport,
+    selectedFields,
+    exportFormat,
+    fileName,
+    isExporting,
+    showSuccess,
+    openModalForSelected,
+    openModalForAll,
+    closeModal,
+    toggleField,
+    selectAllFields,
+    deselectAllFields,
+    setFormat,
+    setFileName,
+    triggerExport,
+    toast,
+    clearToast,
+  } = useExport(places, filteredPlaces);
+
+  useEffect(() => {
+    if (!toast) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      clearToast();
+    }, 3000);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [clearToast, toast]);
 
   const handleSearch = useCallback((value: string) => {
     setSearchQuery(value);
@@ -193,7 +233,20 @@ export default function Home() {
       </div>
 
       <div className="border-b border-zinc-800 px-4 py-3">
-        <SearchBar defaultValue="restaurant" onSearch={handleSearch} />
+        <div className="flex items-center gap-3">
+          <div className="flex-1">
+            <SearchBar defaultValue="restaurant" onSearch={handleSearch} />
+          </div>
+          <button
+            type="button"
+            onClick={openModalForAll}
+            disabled={filteredPlaces.length === 0}
+            className="inline-flex items-center gap-2 rounded-lg border border-gray-600 px-4 py-2 text-sm text-gray-300 hover:border-red-500 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <span>⬇</span>
+            <span>Export All ({filteredPlaces.length})</span>
+          </button>
+        </div>
       </div>
 
       <div className="min-h-0 flex-1 gap-4 p-4 lg:flex">
@@ -220,7 +273,7 @@ export default function Home() {
             isLoading={isLoading}
             selectedPlaceId={selectedPlaceInList?.placeId ?? null}
             onSelectPlace={handlePlaceSelect}
-            onExportSelected={() => {}}
+            onExportSelected={openModalForSelected}
           />
         </section>
 
@@ -286,6 +339,29 @@ export default function Home() {
           </div>
         </div>
       )}
+
+      <ExportModal
+        isOpen={isModalOpen}
+        exportMode={exportMode}
+        exportCount={exportCount}
+        placesToExport={placesToExport}
+        selectedFields={selectedFields}
+        exportFormat={exportFormat}
+        fileName={fileName}
+        isExporting={isExporting}
+        showSuccess={showSuccess}
+        onClose={closeModal}
+        onToggleField={toggleField}
+        onSelectAllFields={selectAllFields}
+        onDeselectAllFields={deselectAllFields}
+        onFormatChange={setFormat}
+        onFileNameChange={setFileName}
+        onExport={() => {
+          void triggerExport();
+        }}
+      />
+
+      {toast && <Toast message={toast.message} type={toast.type} />}
     </main>
   );
 }
