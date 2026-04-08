@@ -24,7 +24,7 @@ export function usePlaces({
   longitude,
   query,
 }: UsePlacesParams): UsePlacesResult {
-  const trimmedQuery = query.trim() || "restaurant";
+  const trimmedQuery = query.trim() || "establishment";
 
   const placesQuery = useQuery({
     queryKey: ["places", latitude, longitude, trimmedQuery],

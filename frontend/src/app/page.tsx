@@ -25,11 +25,14 @@ type UiToastState = {
   type: "success" | "error";
 };
 
+const ITEMS_PER_PAGE = 100;
+
 export default function Home() {
   const [location, setLocation] = useState<GeolocationState | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("restaurant");
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const [isMapVisible, setIsMapVisible] = useState(true);
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const [uiToast, setUiToast] = useState<UiToastState | null>(null);
@@ -85,6 +88,18 @@ export default function Home() {
 
   const filteredPlaces = useMemo(() => applyFilters(places), [applyFilters, places]);
 
+  const totalPages = useMemo(() => {
+    return Math.max(1, Math.ceil(filteredPlaces.length / ITEMS_PER_PAGE));
+  }, [filteredPlaces.length]);
+
+  const clampedPage = Math.min(currentPage, totalPages);
+
+  const paginatedPlaces = useMemo(() => {
+    const start = (clampedPage - 1) * ITEMS_PER_PAGE;
+    const end = start + ITEMS_PER_PAGE;
+    return filteredPlaces.slice(start, end);
+  }, [clampedPage, filteredPlaces]);
+
   const {
     isModalOpen,
     exportMode,
@@ -130,6 +145,7 @@ export default function Home() {
   const handleSearch = useCallback((value: string) => {
     setSearchQuery(value);
     setSelectedPlaceId(null);
+    setCurrentPage(1);
   }, []);
 
   const handlePlaceSelect = useCallback((place: Place) => {
@@ -227,9 +243,11 @@ export default function Home() {
       return "Getting your location...";
     }
     if (isLoading) {
-      return `Searching for ${searchQuery} nearby...`;
+      return searchQuery ? `Searching for ${searchQuery} nearby...` : "Searching nearby places...";
     }
-    return `${filteredPlaces.length} places found for \"${searchQuery}\"`;
+    return searchQuery
+      ? `${filteredPlaces.length} places found for \"${searchQuery}\"`
+      : `${filteredPlaces.length} places found nearby`;
   }, [errorMessage, filteredPlaces.length, isLoading, location, locationError, searchQuery]);
 
   const kpiCards = useMemo(() => {
@@ -269,7 +287,7 @@ export default function Home() {
 
         <div className="mt-3 flex items-center justify-between gap-3">
           <div className="flex-1">
-            <SearchBar defaultValue="restaurant" onSearch={handleSearch} />
+            <SearchBar defaultValue="" onSearch={handleSearch} />
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -301,38 +319,68 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="min-h-0 flex-1 gap-4 p-5 lg:flex">
-        <aside className="hidden min-h-0 lg:block lg:w-[290px]">
-          <FiltersSidebar
-            filters={filters}
-            allPlaces={places}
-            resultCount={filteredPlaces.length}
-            setMinRating={setMinRating}
-            toggleOpenNow={toggleOpenNow}
-            toggleHasPhone={toggleHasPhone}
-            toggleHasWebsite={toggleHasWebsite}
-            onRadiusChange={handleRadiusChange}
-            toggleCategory={toggleCategory}
-            resetFilters={handleResetFilters}
-            isAnyFilterActive={isAnyFilterActive}
-          />
-        </aside>
+      <div className="hidden px-5 pt-4 lg:block">
+        <FiltersSidebar
+          filters={filters}
+          allPlaces={places}
+          resultCount={filteredPlaces.length}
+          setMinRating={setMinRating}
+          toggleOpenNow={toggleOpenNow}
+          toggleHasPhone={toggleHasPhone}
+          toggleHasWebsite={toggleHasWebsite}
+          onRadiusChange={handleRadiusChange}
+          toggleCategory={toggleCategory}
+          resetFilters={handleResetFilters}
+          isAnyFilterActive={isAnyFilterActive}
+        />
+      </div>
 
+      <div className="min-h-0 flex-1 gap-4 p-5 pt-4 lg:flex">
         <section className="min-h-0 flex-1 space-y-3">
           <ActiveFilterChips chips={activeFilterChips} onClearAll={handleResetFilters} />
           <ResultsTable
-            places={filteredPlaces}
+            places={paginatedPlaces}
             isLoading={isLoading}
             selectedPlaceId={selectedPlaceInList?.placeId ?? null}
             onSelectPlace={handlePlaceSelect}
             onExportSelected={openModalForSelected}
           />
+
+          {!isLoading && filteredPlaces.length > ITEMS_PER_PAGE && (
+            <div className="flex items-center justify-between border border-slate-200 bg-white px-4 py-3 text-sm">
+              <p className="text-slate-600">
+                Showing {(clampedPage - 1) * ITEMS_PER_PAGE + 1}-
+                {Math.min(clampedPage * ITEMS_PER_PAGE, filteredPlaces.length)} of {filteredPlaces.length}
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                  disabled={clampedPage === 1}
+                  className="border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 disabled:opacity-50"
+                >
+                  Prev
+                </button>
+                <span className="text-xs font-semibold text-slate-600">
+                  Page {clampedPage} / {totalPages}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                  disabled={clampedPage === totalPages}
+                  className="border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
         </section>
 
         {isMapVisible && (
           <aside className="mt-4 h-[40vh] border border-slate-200 bg-white shadow-sm lg:mt-0 lg:h-full lg:w-[38%]">
             <Map
-              places={filteredPlaces}
+              places={paginatedPlaces}
               center={location}
               selectedPlaceId={selectedPlaceInList?.placeId ?? null}
               onSelectPlace={handlePlaceSelect}

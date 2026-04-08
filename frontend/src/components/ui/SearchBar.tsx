@@ -9,7 +9,7 @@ type SearchBarProps = {
 };
 
 export default function SearchBar({
-  defaultValue = "restaurant",
+  defaultValue = "",
   onSearch,
   debounceMs = 400,
 }: SearchBarProps) {
@@ -17,7 +17,7 @@ export default function SearchBar({
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      onSearch(value.trim() || "restaurant");
+      onSearch(value.trim());
     }, debounceMs);
 
     return () => window.clearTimeout(timer);
