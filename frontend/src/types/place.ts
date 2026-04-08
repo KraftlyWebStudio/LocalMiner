@@ -15,11 +15,27 @@ export type Place = {
   openNow?: boolean;
 };
 
+export type SocialProfiles = {
+  instagram?: string;
+  facebook?: string;
+  x?: string;
+  linkedin?: string;
+  youtube?: string;
+  tiktok?: string;
+};
+
+export type PlaceEnrichment = {
+  email: string | null;
+  socialProfiles: SocialProfiles;
+};
+
 export type PlaceDetails = Place & {
   phoneNumber?: string;
   internationalPhoneNumber?: string;
   website?: string;
   mapsUrl?: string;
+  email?: string;
+  socialProfiles?: SocialProfiles;
   businessStatus?: string;
   openingHours?: string[];
 };

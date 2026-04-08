@@ -3,7 +3,8 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { getNearbyPlaces, getPlaceDetails } from "@/api/googlePlaces";
-import { Place, PlaceDetails } from "@/types/place";
+import { getPlaceEnrichment } from "@/api/placeEnrichment";
+import { Place, PlaceDetails, PlaceEnrichment } from "@/types/place";
 
 type UsePlacesParams = {
   latitude: number | null;
@@ -70,5 +71,27 @@ export function usePlaceDetails(placeId: string | null): UsePlaceDetailsResult {
     placeDetails: detailsQuery.data ?? null,
     isLoading: detailsQuery.isFetching,
     errorMessage: detailsQuery.error instanceof Error ? detailsQuery.error.message : null,
+  };
+}
+
+type UsePlaceEnrichmentResult = {
+  enrichment: PlaceEnrichment | null;
+  isLoading: boolean;
+  errorMessage: string | null;
+};
+
+export function usePlaceEnrichment(website?: string): UsePlaceEnrichmentResult {
+  const enrichmentQuery = useQuery({
+    queryKey: ["place-enrichment", website],
+    enabled: Boolean(website),
+    queryFn: async () => {
+      return getPlaceEnrichment(website);
+    },
+  });
+
+  return {
+    enrichment: enrichmentQuery.data ?? null,
+    isLoading: enrichmentQuery.isFetching,
+    errorMessage: enrichmentQuery.error instanceof Error ? enrichmentQuery.error.message : null,
   };
 }

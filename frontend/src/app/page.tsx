@@ -7,7 +7,7 @@ import MainLayout from "@/components/layouts/MainLayout";
 import Map from "@/components/ui/Map";
 import PlaceCard from "@/components/ui/PlaceCard";
 import SearchBar from "@/components/ui/SearchBar";
-import { usePlaceDetails, usePlaces } from "@/hooks/usePlaces";
+import { usePlaceDetails, usePlaceEnrichment, usePlaces } from "@/hooks/usePlaces";
 import { Place } from "@/types/place";
 
 type GeolocationState = {
@@ -79,6 +79,12 @@ export default function Home() {
     errorMessage: placeDetailsError,
   } = usePlaceDetails(selectedPlaceInList?.placeId ?? null);
 
+  const {
+    enrichment: selectedPlaceEnrichment,
+    isLoading: isEnrichmentLoading,
+    errorMessage: enrichmentError,
+  } = usePlaceEnrichment(selectedPlaceDetails?.website);
+
   const listHeader = useMemo(() => {
     if (locationError) {
       return locationError;
@@ -116,8 +122,16 @@ export default function Home() {
                 <p className="text-sm font-medium text-zinc-700">Loading full details...</p>
               )}
 
+              {isEnrichmentLoading && (
+                <p className="text-sm font-medium text-zinc-700">Scanning website for contact links...</p>
+              )}
+
               {placeDetailsError && (
                 <p className="text-sm font-medium text-red-700">{placeDetailsError}</p>
+              )}
+
+              {enrichmentError && (
+                <p className="text-sm font-medium text-red-700">{enrichmentError}</p>
               )}
 
               {selectedPlaceDetails && (
@@ -174,12 +188,44 @@ export default function Home() {
                   </p>
 
                   <p>
-                    <span className="font-semibold">Email:</span> Not provided by Google Places API
+                    <span className="font-semibold">Email:</span>{" "}
+                    {selectedPlaceEnrichment?.email ? (
+                      <a
+                        href={`mailto:${selectedPlaceEnrichment.email}`}
+                        className="text-red-700 hover:underline"
+                      >
+                        {selectedPlaceEnrichment.email}
+                      </a>
+                    ) : (
+                      "Not found on website"
+                    )}
                   </p>
 
-                  <p>
-                    <span className="font-semibold">Social Media:</span> Not provided by Google Places API
-                  </p>
+                  <div>
+                    <p className="font-semibold">Social Media:</p>
+                    {selectedPlaceEnrichment?.socialProfiles &&
+                    Object.keys(selectedPlaceEnrichment.socialProfiles).length > 0 ? (
+                      <ul className="mt-1 space-y-1">
+                        {Object.entries(selectedPlaceEnrichment.socialProfiles).map(
+                          ([network, link]) => (
+                            <li key={network}>
+                              <span className="font-medium uppercase">{network}:</span>{" "}
+                              <a
+                                href={link}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-red-700 hover:underline"
+                              >
+                                Open profile
+                              </a>
+                            </li>
+                          ),
+                        )}
+                      </ul>
+                    ) : (
+                      <p className="text-sm">Not found on website</p>
+                    )}
+                  </div>
 
                   {selectedPlaceDetails.openingHours && selectedPlaceDetails.openingHours.length > 0 && (
                     <div>
