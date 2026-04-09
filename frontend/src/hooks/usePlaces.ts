@@ -21,7 +21,6 @@ type UsePlacesResult = {
 };
 
 const DETAIL_BATCH_SIZE = 8;
-const MAX_ENRICHMENT_CANDIDATES = 150;
 
 type LatLng = { lat: number; lng: number };
 
@@ -189,7 +188,7 @@ export function usePlaces({
 
       const origin = { lat: latitude, lng: longitude };
       const nearbyPlaces = await collectNearbyPlaces(origin, trimmedQuery, radius);
-      return enrichPlacesWithDetails(nearbyPlaces.slice(0, MAX_ENRICHMENT_CANDIDATES));
+      return enrichPlacesWithDetails(nearbyPlaces);
     },
   });
 

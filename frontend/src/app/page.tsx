@@ -431,15 +431,17 @@ export default function Home() {
       </div>
 
       <div className="min-h-0 min-w-0 flex-1 gap-4 p-5 pt-4 lg:flex lg:overflow-hidden">
-        <section className="min-h-0 min-w-0 flex-1 space-y-3 lg:overflow-hidden">
+        <section className="flex min-h-0 min-w-0 flex-1 flex-col gap-3 lg:overflow-hidden">
           <ActiveFilterChips chips={activeFilterChips} onClearAll={handleResetFilters} />
-          <ResultsTable
-            places={paginatedPlaces}
-            isLoading={isLoading}
-            selectedPlaceId={selectedPlaceInList?.placeId ?? null}
-            onSelectPlace={handlePlaceSelect}
-            onExportSelected={openModalForSelected}
-          />
+          <div className="min-h-0 flex-1">
+            <ResultsTable
+              places={paginatedPlaces}
+              isLoading={isLoading}
+              selectedPlaceId={selectedPlaceInList?.placeId ?? null}
+              onSelectPlace={handlePlaceSelect}
+              onExportSelected={openModalForSelected}
+            />
+          </div>
 
           <div className="flex items-center justify-between border border-slate-200 bg-white px-4 py-3 text-sm">
             <p className="text-slate-600">

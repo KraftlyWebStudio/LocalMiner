@@ -108,28 +108,75 @@ export default function FiltersSidebar({
       </div>
 
       <div className="flex-1 overflow-y-auto p-4">
-        <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
-        <section className="space-y-2 border border-slate-200 bg-slate-50 p-3">
-          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-slate-500">Minimum Rating</p>
-          <div className="grid grid-cols-3 gap-2">
-            {[4, 3, 2].map((rating) => {
-              const isActive = filters.minRating === rating;
-              return (
-                <button
-                  key={rating}
-                  type="button"
-                  onClick={() => setMinRating(isActive ? null : rating)}
-                  className={[
-                    "border px-2 py-2 text-sm font-bold",
-                    isActive
-                      ? "border-red-500 bg-red-600 text-white"
-                      : "border-slate-300 bg-white text-slate-700 hover:border-slate-400",
-                  ].join(" ")}
-                >
-                  {rating}★+
-                </button>
-              );
-            })}
+        <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+        <section className="space-y-3 border border-slate-200 bg-slate-50 p-3">
+          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-slate-500">Rating & Radius</p>
+
+          <div className="space-y-2">
+            <p className="text-xs font-semibold text-slate-600">Minimum Rating</p>
+            <div className="grid grid-cols-3 gap-2">
+              {[4, 3, 2].map((rating) => {
+                const isActive = filters.minRating === rating;
+                return (
+                  <button
+                    key={rating}
+                    type="button"
+                    onClick={() => setMinRating(isActive ? null : rating)}
+                    className={[
+                      "border px-2 py-2 text-sm font-bold",
+                      isActive
+                        ? "border-red-500 bg-red-600 text-white"
+                        : "border-slate-300 bg-white text-slate-700 hover:border-slate-400",
+                    ].join(" ")}
+                  >
+                    {rating}★+
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="h-px bg-slate-200" />
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-semibold text-slate-600">Radius</p>
+              <span className="border border-slate-300 bg-white px-2 py-1 text-xs font-semibold text-slate-700">
+                {Math.round(filters.radius / 1000)} km
+              </span>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2 lg:grid-cols-5">
+              {[2, 5, 10, 20, 50].map((km) => {
+                const meters = km * 1000;
+                const active = filters.radius === meters;
+                return (
+                  <button
+                    key={km}
+                    type="button"
+                    onClick={() => onRadiusChange(meters)}
+                    className={[
+                      "border px-1 py-1 text-xs font-semibold",
+                      active
+                        ? "border-red-500 bg-red-600 text-white"
+                        : "border-slate-300 bg-white text-slate-700 hover:border-slate-400",
+                    ].join(" ")}
+                  >
+                    {km}km
+                  </button>
+                );
+              })}
+            </div>
+
+            <input
+              type="range"
+              min={MIN_RADIUS_METERS}
+              max={MAX_RADIUS_METERS}
+              step={500}
+              value={filters.radius}
+              onChange={(event) => onRadiusChange(Number(event.target.value))}
+              className="w-full accent-red-500"
+            />
           </div>
         </section>
 
@@ -141,47 +188,6 @@ export default function FiltersSidebar({
             <TriStateControl label="Has Website" value={filters.hasWebsite} onChange={setHasWebsiteFilter} />
           </div>
           {hasBusinessFilters && <p className="text-xs font-semibold text-red-600">Active</p>}
-        </section>
-
-        <section className="space-y-3 border border-slate-200 bg-slate-50 p-3">
-          <div className="flex items-center justify-between">
-            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-slate-500">Radius</p>
-            <span className="border border-slate-300 bg-white px-2 py-1 text-xs font-semibold text-slate-700">
-              {Math.round(filters.radius / 1000)} km
-            </span>
-          </div>
-
-          <div className="grid grid-cols-3 gap-2 lg:grid-cols-5">
-            {[2, 5, 10, 20, 50].map((km) => {
-              const meters = km * 1000;
-              const active = filters.radius === meters;
-              return (
-                <button
-                  key={km}
-                  type="button"
-                  onClick={() => onRadiusChange(meters)}
-                  className={[
-                    "border px-1 py-1 text-xs font-semibold",
-                    active
-                      ? "border-red-500 bg-red-600 text-white"
-                      : "border-slate-300 bg-white text-slate-700 hover:border-slate-400",
-                  ].join(" ")}
-                >
-                  {km}km
-                </button>
-              );
-            })}
-          </div>
-
-          <input
-            type="range"
-            min={MIN_RADIUS_METERS}
-            max={MAX_RADIUS_METERS}
-            step={500}
-            value={filters.radius}
-            onChange={(event) => onRadiusChange(Number(event.target.value))}
-            className="w-full accent-red-500"
-          />
         </section>
 
         <section className="space-y-2 border border-slate-200 bg-slate-50 p-3 xl:col-span-1">
