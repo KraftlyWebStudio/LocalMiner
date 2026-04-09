@@ -146,8 +146,8 @@ export default function FiltersSidebar({
               </span>
             </div>
 
-            <div className="grid grid-cols-3 gap-2 lg:grid-cols-5">
-              {[2, 5, 10, 20, 50].map((km) => {
+            <div className="grid grid-cols-4 gap-2 lg:grid-cols-7">
+              {[2, 5, 10, 20, 50, 100, 200].map((km) => {
                 const meters = km * 1000;
                 const active = filters.radius === meters;
                 return (

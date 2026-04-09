@@ -75,9 +75,23 @@ function offsetCoordinate(origin: LatLng, distanceMeters: number, bearingDegrees
 }
 
 function buildSearchCenters(origin: LatLng, radiusMeters: number): LatLng[] {
-  const ringDistance = Math.max(2_000, Math.min(20_000, radiusMeters * 0.6));
-  const bearings = [0, 60, 120, 180, 240, 300];
-  return [origin, ...bearings.map((bearing) => offsetCoordinate(origin, ringDistance, bearing))];
+  // Nearby Search returns a limited number of results per search area.
+  // For larger radii we query multiple rings of centers to avoid dropping results.
+  const ringStep = 35_000;
+  const rings = Math.max(1, Math.ceil(radiusMeters / ringStep));
+  const centers: LatLng[] = [origin];
+
+  for (let ring = 1; ring <= rings; ring += 1) {
+    const distance = Math.min(radiusMeters, ring * ringStep);
+    const pointsInRing = Math.max(6, Math.round((2 * Math.PI * distance) / ringStep));
+
+    for (let point = 0; point < pointsInRing; point += 1) {
+      const bearing = (360 / pointsInRing) * point;
+      centers.push(offsetCoordinate(origin, distance, bearing));
+    }
+  }
+
+  return centers;
 }
 
 function dedupeByPlaceId(places: Place[]): Place[] {

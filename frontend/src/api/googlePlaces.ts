@@ -7,34 +7,105 @@ export const apiClient = axios.create({
   timeout: 15_000,
 });
 
-function toPlace(result: google.maps.places.PlaceResult): Place {
+const SEARCH_FIELDS = [
+  "id",
+  "displayName",
+  "formattedAddress",
+  "location",
+  "rating",
+  "userRatingCount",
+  "types",
+  "currentOpeningHours",
+] as const;
+
+const DETAIL_FIELDS = [
+  ...SEARCH_FIELDS,
+  "nationalPhoneNumber",
+  "internationalPhoneNumber",
+  "websiteURI",
+  "googleMapsURI",
+  "businessStatus",
+  "regularOpeningHours",
+] as const;
+
+type SearchByTextResponse = {
+  places?: google.maps.places.Place[];
+  nextPageToken?: string;
+};
+
+type SearchNearbyResponse = {
+  places?: google.maps.places.Place[];
+};
+
+function resolveCoordinate(value: number | (() => number)): number {
+  return typeof value === "function" ? value() : value;
+}
+
+function readPlaceLocation(place: google.maps.places.Place): { lat: number; lng: number } {
+  const location = place.location;
+  if (!location) {
+    return { lat: 0, lng: 0 };
+  }
+
   return {
-    id: result.place_id ?? result.name ?? crypto.randomUUID(),
-    placeId: result.place_id ?? "",
-    name: result.name ?? "Unknown place",
-    address: result.vicinity ?? result.formatted_address ?? "Address unavailable",
-    rating: result.rating,
-    userRatingsTotal: result.user_ratings_total,
-    location: {
-      lat: result.geometry?.location?.lat() ?? 0,
-      lng: result.geometry?.location?.lng() ?? 0,
-    },
-    types: result.types ?? [],
-    openNow: result.opening_hours?.isOpen(),
+    lat: resolveCoordinate(location.lat),
+    lng: resolveCoordinate(location.lng),
   };
 }
 
-function toPlaceDetails(result: google.maps.places.PlaceResult): PlaceDetails {
+function readDisplayName(place: google.maps.places.Place): string {
+  const value = place.displayName;
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (value && typeof value === "object" && "text" in value) {
+    const text = (value as { text?: string }).text;
+    if (text) {
+      return text;
+    }
+  }
+
+  return "Unknown place";
+}
+
+function toPlace(result: google.maps.places.Place): Place {
+  const currentOpeningHours = (
+    result as unknown as { currentOpeningHours?: { openNow?: boolean | null } }
+  ).currentOpeningHours;
+
+  return {
+    id: result.id ?? readDisplayName(result) ?? crypto.randomUUID(),
+    placeId: result.id ?? "",
+    name: readDisplayName(result),
+    address: result.formattedAddress ?? "Address unavailable",
+    rating: result.rating ?? undefined,
+    userRatingsTotal: result.userRatingCount ?? undefined,
+    location: readPlaceLocation(result),
+    types: result.types ?? [],
+    openNow: currentOpeningHours?.openNow ?? undefined,
+  };
+}
+
+function toPlaceDetails(result: google.maps.places.Place): PlaceDetails {
   const base = toPlace(result);
+  const details = result as unknown as {
+    nationalPhoneNumber?: string;
+    internationalPhoneNumber?: string;
+    websiteURI?: string;
+    googleMapsURI?: string;
+    businessStatus?: string;
+    regularOpeningHours?: { weekdayDescriptions?: string[] };
+  };
 
   return {
     ...base,
-    phoneNumber: result.formatted_phone_number,
-    internationalPhoneNumber: result.international_phone_number,
-    website: result.website,
-    mapsUrl: result.url,
-    businessStatus: result.business_status,
-    openingHours: result.opening_hours?.weekday_text,
+    phoneNumber: details.nationalPhoneNumber,
+    internationalPhoneNumber: details.internationalPhoneNumber,
+    website: details.websiteURI,
+    mapsUrl: details.googleMapsURI,
+    businessStatus: details.businessStatus,
+    openingHours: details.regularOpeningHours?.weekdayDescriptions,
   };
 }
 
@@ -55,16 +126,9 @@ function dedupePlaces(places: Place[]): Place[] {
 }
 
 async function createPlacesService(
-  map?: google.maps.Map,
-): Promise<google.maps.places.PlacesService> {
+): Promise<typeof google.maps.places.Place> {
   await loadGoogleMaps();
-
-  if (map) {
-    return new google.maps.places.PlacesService(map);
-  }
-
-  const container = document.createElement("div");
-  return new google.maps.places.PlacesService(container);
+  return google.maps.places.Place;
 }
 
 export async function getNearbyPlaces(
@@ -72,46 +136,78 @@ export async function getNearbyPlaces(
   lng: number,
   query: string,
   radius = 20_000,
-  map?: google.maps.Map,
+  _map?: google.maps.Map,
 ): Promise<Place[]> {
-  const service = await createPlacesService(map);
+  const PlaceClass = await createPlacesService();
+  const normalizedQuery = query.trim();
+  const center = { lat, lng };
 
-  return new Promise((resolve, reject) => {
-    const normalizedQuery = query.trim();
-    const request: google.maps.places.PlaceSearchRequest = {
-      location: new google.maps.LatLng(lat, lng),
-      radius,
-    };
+  if (!normalizedQuery) {
+    const searchNearby = (
+      PlaceClass as unknown as {
+        searchNearby: (request: Record<string, unknown>) => Promise<SearchNearbyResponse>;
+      }
+    ).searchNearby;
 
-    if (normalizedQuery) {
-      request.keyword = normalizedQuery;
+    if (typeof searchNearby !== "function") {
+      throw new Error("Place.searchNearby is unavailable in this Maps JavaScript API version.");
     }
 
-    const allResults: Place[] = [];
-
-    service.nearbySearch(request, (results, status, pagination) => {
-      if (status !== google.maps.places.PlacesServiceStatus.OK || !results) {
-        if (status === google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
-          resolve([]);
-          return;
-        }
-
-        reject(new Error(`Nearby search failed: ${status}`));
-        return;
-      }
-
-      allResults.push(...results.map(toPlace).filter((place) => Boolean(place.placeId)));
-
-      if (pagination?.hasNextPage) {
-        window.setTimeout(() => {
-          pagination.nextPage();
-        }, 2000);
-        return;
-      }
-
-      resolve(dedupePlaces(allResults));
+    const nearbyResponse = await searchNearby({
+      fields: [...SEARCH_FIELDS],
+      maxResultCount: 20,
+      locationRestriction: {
+        center,
+        radius,
+      },
     });
-  });
+
+    return dedupePlaces(
+      (nearbyResponse.places ?? []).map(toPlace).filter((place) => Boolean(place.placeId)),
+    );
+  }
+
+  const searchByText = (
+    PlaceClass as unknown as {
+      searchByText: (request: Record<string, unknown>) => Promise<SearchByTextResponse>;
+    }
+  ).searchByText;
+
+  if (typeof searchByText !== "function") {
+    throw new Error("Place.searchByText is unavailable in this Maps JavaScript API version.");
+  }
+
+  const allResults: Place[] = [];
+  let pageToken: string | undefined;
+
+  do {
+    const request: Record<string, unknown> = {
+      textQuery: normalizedQuery,
+      fields: [...SEARCH_FIELDS],
+      maxResultCount: 20,
+      locationRestriction: {
+        center,
+        radius,
+      },
+    };
+
+    if (pageToken) {
+      request.pageToken = pageToken;
+    }
+
+    const response = await searchByText(request);
+    const places = response.places ?? [];
+    allResults.push(...places.map(toPlace).filter((place) => Boolean(place.placeId)));
+    pageToken = response.nextPageToken;
+
+    if (pageToken) {
+      await new Promise((resolve) => {
+        window.setTimeout(resolve, 2000);
+      });
+    }
+  } while (pageToken);
+
+  return dedupePlaces(allResults);
 }
 
 export async function geocodeLocation(query: string): Promise<{ lat: number; lng: number; label: string }> {
@@ -138,37 +234,21 @@ export async function geocodeLocation(query: string): Promise<{ lat: number; lng
 
 export async function getPlaceDetails(
   placeId: string,
-  map?: google.maps.Map,
+  _map?: google.maps.Map,
 ): Promise<PlaceDetails> {
-  const service = await createPlacesService(map);
+  const PlaceClass = await createPlacesService();
+  const place = new PlaceClass({ id: placeId });
 
-  return new Promise((resolve, reject) => {
-    const request: google.maps.places.PlaceDetailsRequest = {
-      placeId,
-      fields: [
-        "place_id",
-        "name",
-        "formatted_address",
-        "geometry",
-        "rating",
-        "user_ratings_total",
-        "types",
-        "formatted_phone_number",
-        "international_phone_number",
-        "opening_hours",
-        "website",
-        "url",
-        "business_status",
-      ],
-    };
+  const fetchFields = (
+    place as unknown as {
+      fetchFields: (request: { fields: string[] }) => Promise<unknown>;
+    }
+  ).fetchFields;
 
-    service.getDetails(request, (result, status) => {
-      if (status !== google.maps.places.PlacesServiceStatus.OK || !result) {
-        reject(new Error(`Place details failed: ${status}`));
-        return;
-      }
+  if (typeof fetchFields !== "function") {
+    throw new Error("Place.fetchFields is unavailable in this Maps JavaScript API version.");
+  }
 
-      resolve(toPlaceDetails(result));
-    });
-  });
+  await fetchFields({ fields: [...DETAIL_FIELDS] });
+  return toPlaceDetails(place);
 }
