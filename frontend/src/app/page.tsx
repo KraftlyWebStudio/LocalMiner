@@ -355,11 +355,11 @@ export default function Home() {
   }, [sortedPlaces]);
 
   return (
-    <main className="flex h-screen w-full min-w-0 flex-col overflow-x-hidden bg-slate-100 text-slate-800">
-      <div className="border-b border-slate-200 bg-white px-5 py-4">
+    <main className="flex h-screen w-full min-w-0 flex-col overflow-x-hidden bg-transparent px-3 py-3 text-slate-800 sm:px-4 sm:py-4">
+      <div className="rounded-3xl border border-sky-100 bg-white/85 px-5 py-4 shadow-[0_30px_70px_-48px_rgba(8,28,69,0.95)] backdrop-blur-sm">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-xl font-black uppercase tracking-[0.12em] text-red-500">LocalMiner</h1>
+            <h1 className="text-xl font-black uppercase tracking-[0.14em] text-sky-700">LocalMiner</h1>
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
               {listHeader} · {locationLabel}
             </p>
@@ -367,7 +367,7 @@ export default function Home() {
 
           <div className="flex items-center gap-2">
             {kpiCards.map((card) => (
-              <div key={card.label} className="border border-slate-200 bg-slate-50 px-3 py-2 shadow-sm">
+              <div key={card.label} className="rounded-xl border border-sky-100 bg-gradient-to-b from-white to-sky-50 px-3 py-2 shadow-[0_12px_24px_-18px_rgba(13,45,118,0.95)]">
                 <p className="text-[10px] uppercase tracking-wide text-slate-500">{card.label}</p>
                 <p className="text-sm font-bold text-slate-800">{card.value}</p>
               </div>
@@ -386,7 +386,7 @@ export default function Home() {
                 value={locationQuery}
                 onChange={(event) => setLocationQuery(event.target.value)}
                 placeholder="Change location"
-                className="h-12 w-48 border border-slate-300 bg-white px-3 text-sm text-slate-800 outline-none placeholder:text-slate-400"
+                className="h-12 w-48 rounded-xl border border-sky-200 bg-white px-3 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-sky-400"
               />
               <button
                 type="button"
@@ -394,7 +394,7 @@ export default function Home() {
                   void handleLocationApply();
                 }}
                 disabled={isResolvingLocation}
-                className="border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:border-red-400 hover:text-red-600 disabled:opacity-50"
+                className="rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-xs font-semibold text-sky-700 hover:border-sky-400 hover:bg-sky-100 disabled:opacity-50"
               >
                 {isResolvingLocation ? "Changing..." : "Change Location"}
               </button>
@@ -405,7 +405,7 @@ export default function Home() {
               type="button"
               onClick={openModalForAll}
               disabled={sortedPlaces.length === 0}
-              className="inline-flex items-center gap-2 border border-slate-300 bg-white px-4 py-2 text-sm text-slate-700 hover:border-red-400 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-xl border border-sky-200 bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <span>⬇</span>
               <span>Export All ({sortedPlaces.length})</span>
@@ -414,7 +414,7 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="hidden px-5 pt-4 lg:block">
+      <div className="hidden pt-4 lg:block">
         <FiltersSidebar
           filters={filters}
           allPlaces={placesWithDistance}
@@ -430,7 +430,7 @@ export default function Home() {
         />
       </div>
 
-      <div className="min-h-0 min-w-0 flex-1 gap-4 p-5 pt-4 lg:flex lg:overflow-hidden">
+      <div className="min-h-0 min-w-0 flex-1 gap-4 pt-4 lg:flex lg:overflow-hidden">
         <section className="flex min-h-0 min-w-0 flex-1 flex-col gap-3 lg:overflow-hidden">
           <ActiveFilterChips chips={activeFilterChips} onClearAll={handleResetFilters} />
           <div className="min-h-0 flex-1">
@@ -443,7 +443,7 @@ export default function Home() {
             />
           </div>
 
-          <div className="flex items-center justify-between border border-slate-200 bg-white px-4 py-3 text-sm">
+          <div className="flex items-center justify-between rounded-2xl border border-sky-100 bg-white/85 px-4 py-3 text-sm shadow-[0_12px_24px_-20px_rgba(13,45,118,0.8)]">
             <p className="text-slate-600">
               {filteredPlaces.length === 0
                 ? "No results"
@@ -454,7 +454,7 @@ export default function Home() {
                 type="button"
                 onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                 disabled={clampedPage === 1}
-                className="border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 disabled:opacity-50"
+                className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 disabled:opacity-50"
               >
                 Prev
               </button>
@@ -465,7 +465,7 @@ export default function Home() {
                 type="button"
                 onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
                 disabled={clampedPage === totalPages}
-                className="border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 disabled:opacity-50"
+                className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 disabled:opacity-50"
               >
                 Next
               </button>
@@ -477,11 +477,11 @@ export default function Home() {
       <button
         type="button"
         onClick={() => setIsMobileFiltersOpen(true)}
-        className="fixed bottom-4 left-4 z-40 inline-flex items-center gap-2 border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-lg md:hidden"
+        className="fixed bottom-4 left-4 z-40 inline-flex items-center gap-2 rounded-xl border border-sky-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-lg md:hidden"
       >
         <span>⚙ Filters</span>
         {isAnyFilterActive && (
-          <span className="inline-flex min-w-5 items-center justify-center border border-red-500 bg-red-600 px-1.5 text-xs text-white">
+          <span className="inline-flex min-w-5 items-center justify-center rounded-md border border-sky-600 bg-sky-600 px-1.5 text-xs text-white">
             {activeFilterCount}
           </span>
         )}
@@ -495,13 +495,13 @@ export default function Home() {
             onClick={() => setIsMobileFiltersOpen(false)}
             className="h-full flex-1 bg-black/60"
           />
-          <div className="h-full w-[88%] max-w-sm border-l border-slate-200 bg-white">
-            <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+          <div className="h-full w-[88%] max-w-sm border-l border-sky-100 bg-white">
+            <div className="flex items-center justify-between border-b border-sky-100 px-4 py-3">
               <p className="text-sm font-black uppercase tracking-wide text-slate-800">Filters</p>
               <button
                 type="button"
                 onClick={() => setIsMobileFiltersOpen(false)}
-                className="border border-slate-300 px-2 py-1 text-xs font-semibold text-slate-700"
+                className="rounded-lg border border-slate-300 px-2 py-1 text-xs font-semibold text-slate-700"
               >
                 Close
               </button>

@@ -1,11 +1,11 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --background: #f3f7ff;
+  --foreground: #10223e;
   --surface: #ffffff;
-  --primary: #dc2626;
-  --primary-strong: #b91c1c;
+  --primary: #0b6dff;
+  --primary-strong: #0057d8;
 }
 
 @theme inline {
@@ -19,7 +19,6 @@
 }
 
 * {
-  border-radius: 0;
   box-sizing: border-box;
 }
 
@@ -31,11 +30,19 @@ body {
 }
 
 body {
-  background: var(--background);
+  background:
+    radial-gradient(circle at 12% 10%, #dbeafe 0%, transparent 34%),
+    radial-gradient(circle at 88% 16%, #bfdbfe 0%, transparent 30%),
+    linear-gradient(180deg, #eef4ff 0%, #f7faff 38%, #f1f6ff 100%);
   color: var(--foreground);
-  font-family: var(--font-sans), "Segoe UI", sans-serif;
+  font-family: var(--font-sans), "Avenir Next", "Segoe UI", sans-serif;
 }
 
 input::placeholder {
-  color: #71717a;
+  color: #7284a3;
+}
+
+::selection {
+  background: #bfd8ff;
+  color: #071631;
 }

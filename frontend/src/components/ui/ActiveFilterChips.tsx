@@ -23,10 +23,10 @@ export default function ActiveFilterChips({ chips, onClearAll }: ActiveFilterChi
           key={chip.key}
           type="button"
           onClick={chip.onRemove}
-          className="inline-flex items-center gap-2 border border-slate-300 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 shadow-sm hover:border-red-400 hover:text-red-600"
+          className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white/95 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-[0_6px_18px_-14px_rgba(15,35,95,0.9)] hover:border-sky-400 hover:text-sky-700"
         >
           <span>{chip.label}</span>
-          <span aria-hidden>×</span>
+          <span aria-hidden className="text-sm leading-none">×</span>
         </button>
       ))}
 
@@ -34,7 +34,7 @@ export default function ActiveFilterChips({ chips, onClearAll }: ActiveFilterChi
         <button
           type="button"
           onClick={onClearAll}
-          className="inline-flex items-center border border-slate-300 bg-white px-2.5 py-1 text-xs font-semibold text-slate-600 hover:border-slate-400"
+          className="inline-flex items-center rounded-full border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:border-slate-500"
         >
           Clear all
         </button>

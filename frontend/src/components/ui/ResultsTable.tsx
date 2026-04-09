@@ -106,23 +106,23 @@ export default function ResultsTable({
   };
 
   return (
-    <div className="flex h-full min-w-0 flex-col border border-slate-200 bg-white shadow-sm">
+    <div className="flex h-full min-w-0 flex-col overflow-hidden rounded-3xl border border-sky-100 bg-white/90 shadow-[0_30px_60px_-40px_rgba(9,30,80,0.9)] backdrop-blur-sm">
       <div className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-auto">
         <table className="w-full min-w-330 border-collapse text-sm text-slate-700">
-          <thead className="sticky top-0 z-10 bg-slate-800 text-xs uppercase tracking-wide text-slate-100">
+          <thead className="sticky top-0 z-10 bg-linear-to-r from-slate-900 via-slate-800 to-slate-900 text-xs uppercase tracking-wide text-slate-100">
             <tr>
-              <th className="sticky left-0 z-10 w-12 border-b border-slate-700 bg-slate-800 px-3 py-3 text-left">
+              <th className="sticky left-0 z-10 w-12 border-b border-slate-700 bg-slate-900 px-3 py-3 text-left">
                 <input
                   ref={selectAllRef}
                   type="checkbox"
                   checked={allSelected}
                   onChange={handleToggleAll}
                   aria-label="Select all rows"
-                  className="h-4 w-4 accent-red-500"
+                  className="h-4 w-4 accent-sky-500"
                 />
               </th>
               <th className="w-12 border-b border-slate-700 px-3 py-3 text-left">#</th>
-              <th className="sticky left-12 z-10 min-w-50 border-b border-slate-700 bg-slate-800 px-3 py-3 text-left">
+              <th className="sticky left-12 z-10 min-w-50 border-b border-slate-700 bg-slate-900 px-3 py-3 text-left">
                 Business Name
               </th>
               <th className="min-w-37.5 border-b border-slate-700 px-3 py-3 text-left">Category</th>
@@ -171,8 +171,8 @@ export default function ResultsTable({
                     key={place.placeId}
                     onClick={() => onSelectPlace(place)}
                     className={[
-                      "cursor-pointer border-b border-slate-200 hover:bg-slate-50",
-                      isActive ? "border-l-4 border-red-500 bg-red-50/60" : "",
+                      "cursor-pointer border-b border-slate-100 transition hover:bg-sky-50/45",
+                      isActive ? "border-l-4 border-sky-500 bg-sky-50/70" : "",
                     ].join(" ")}
                   >
                     <td
@@ -184,7 +184,7 @@ export default function ResultsTable({
                         checked={isChecked}
                         onChange={() => handleToggleRow(place.placeId)}
                         aria-label={`Select ${place.name}`}
-                        className="h-4 w-4 accent-red-500"
+                        className="h-4 w-4 accent-sky-500"
                       />
                     </td>
 
@@ -197,7 +197,7 @@ export default function ResultsTable({
                           event.stopPropagation();
                           onSelectPlace(place);
                         }}
-                        className="font-semibold text-slate-800 hover:text-red-600"
+                        className="font-semibold text-slate-800 hover:text-sky-700"
                       >
                         {truncateText(place.name, 42)}
                       </button>
@@ -235,7 +235,7 @@ export default function ResultsTable({
                           target="_blank"
                           rel="noreferrer"
                           onClick={(event) => event.stopPropagation()}
-                          className="hover:text-red-600"
+                          className="hover:text-sky-700"
                         >
                           {truncateText(websiteValue, 30)}
                         </a>
@@ -250,7 +250,7 @@ export default function ResultsTable({
                         target="_blank"
                         rel="noreferrer"
                         onClick={(event) => event.stopPropagation()}
-                        className="inline-flex border border-slate-300 bg-white px-2 py-1 text-xs font-semibold text-slate-700 hover:border-red-400 hover:text-red-600"
+                        className="inline-flex rounded-lg border border-sky-200 bg-sky-50 px-2.5 py-1.5 text-xs font-semibold text-sky-700 hover:border-sky-400 hover:bg-sky-100"
                       >
                         Open
                       </a>
@@ -262,14 +262,14 @@ export default function ResultsTable({
                           type="button"
                           onClick={() => void handleCopy(phoneValue)}
                           disabled={!phoneValue}
-                          className="border border-slate-300 bg-white px-2 py-1 text-xs font-semibold text-slate-700 hover:border-red-400 hover:text-red-600"
+                          className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:border-sky-300 hover:text-sky-700"
                         >
                           Copy phone
                         </button>
                         <button
                           type="button"
                           onClick={() => void handleCopy(place.name)}
-                          className="border border-slate-300 bg-white px-2 py-1 text-xs font-semibold text-slate-700 hover:border-red-400 hover:text-red-600"
+                          className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:border-sky-300 hover:text-sky-700"
                         >
                           Copy name
                         </button>
@@ -283,20 +283,20 @@ export default function ResultsTable({
       </div>
 
       {selectedCountInCurrentRows > 0 && (
-        <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-4 py-3 text-sm">
+        <div className="flex items-center justify-between border-t border-sky-100 bg-linear-to-r from-slate-50 to-sky-50 px-4 py-3 text-sm">
           <span className="text-slate-700">{selectedCountInCurrentRows} businesses selected</span>
           <div className="flex gap-2">
             <button
               type="button"
               onClick={() => setSelectedIds(new Set())}
-              className="border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-slate-400"
+              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-slate-500"
             >
               Clear selection
             </button>
             <button
               type="button"
               onClick={() => onExportSelected(selectedPlaces)}
-              className="border border-red-500 bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-500"
+              className="rounded-lg border border-sky-600 bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-sky-500"
             >
               Export Selected
             </button>
