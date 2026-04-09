@@ -26,7 +26,7 @@ type UiToastState = {
   type: "success" | "error";
 };
 
-const ITEMS_PER_PAGE = 100;
+const ITEMS_PER_PAGE = 15;
 
 type PlaceWithDistance = Place & {
   distanceMeters?: number;
@@ -355,7 +355,7 @@ export default function Home() {
   }, [sortedPlaces]);
 
   return (
-    <main className="flex h-screen w-full min-w-0 flex-col overflow-x-hidden bg-transparent px-3 py-3 text-slate-800 sm:px-4 sm:py-4">
+    <main className="flex min-h-screen w-full min-w-0 flex-col overflow-x-hidden bg-transparent px-3 py-3 text-slate-800 sm:px-4 sm:py-4">
       <div className="rounded-3xl border border-sky-100 bg-white/85 px-5 py-4 shadow-[0_30px_70px_-48px_rgba(8,28,69,0.95)] backdrop-blur-sm">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -430,10 +430,10 @@ export default function Home() {
         />
       </div>
 
-      <div className="min-h-0 min-w-0 flex-1 gap-4 pt-4 lg:flex lg:overflow-hidden">
-        <section className="flex min-h-0 min-w-0 flex-1 flex-col gap-3 lg:overflow-hidden">
+      <div className="min-w-0 flex-1 gap-4 pt-4 lg:flex">
+        <section className="flex min-w-0 flex-1 flex-col gap-3">
           <ActiveFilterChips chips={activeFilterChips} onClearAll={handleResetFilters} />
-          <div className="min-h-0 flex-1">
+          <div className="flex-1">
             <ResultsTable
               places={paginatedPlaces}
               isLoading={isLoading}

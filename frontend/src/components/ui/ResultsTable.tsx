@@ -106,8 +106,8 @@ export default function ResultsTable({
   };
 
   return (
-    <div className="flex h-full min-w-0 flex-col overflow-hidden rounded-3xl border border-sky-100 bg-white/90 shadow-[0_30px_60px_-40px_rgba(9,30,80,0.9)] backdrop-blur-sm">
-      <div className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-auto">
+    <div className="min-w-0 overflow-hidden rounded-3xl border border-sky-100 bg-white/90 shadow-[0_30px_60px_-40px_rgba(9,30,80,0.9)] backdrop-blur-sm">
+      <div className="min-w-0 overflow-x-auto">
         <table className="w-full min-w-330 border-collapse text-sm text-slate-700">
           <thead className="sticky top-0 z-10 bg-linear-to-r from-slate-900 via-slate-800 to-slate-900 text-xs uppercase tracking-wide text-slate-100">
             <tr>
