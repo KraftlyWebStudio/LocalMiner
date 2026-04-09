@@ -129,7 +129,6 @@ export default function ResultsTable({
               <th className="min-w-57.5 border-b border-slate-700 px-3 py-3 text-left">Address</th>
               <th className="min-w-37.5 border-b border-slate-700 px-3 py-3 text-left">Phone</th>
               <th className="min-w-37.5 border-b border-slate-700 px-3 py-3 text-left">Rating</th>
-              <th className="min-w-30 border-b border-slate-700 px-3 py-3 text-left">Status</th>
               <th className="min-w-27.5 border-b border-slate-700 px-3 py-3 text-left">Website</th>
               <th className="min-w-25 border-b border-slate-700 px-3 py-3 text-left">Maps Link</th>
               <th className="min-w-47.5 border-b border-slate-700 px-3 py-3 text-left">Actions</th>
@@ -140,7 +139,7 @@ export default function ResultsTable({
             {isLoading &&
               Array.from({ length: 5 }).map((_, rowIdx) => (
                 <tr key={`skeleton-${rowIdx}`} className="animate-pulse border-b border-slate-200">
-                  {Array.from({ length: 11 }).map((__, colIdx) => (
+                  {Array.from({ length: 10 }).map((__, colIdx) => (
                     <td key={`cell-${rowIdx}-${colIdx}`} className="px-3 py-3">
                       <div className="h-4 w-full bg-slate-200" />
                     </td>
@@ -150,7 +149,7 @@ export default function ResultsTable({
 
             {!isLoading && places.length === 0 && (
               <tr>
-                <td colSpan={11} className="px-4 py-14 text-center text-slate-500">
+                <td colSpan={10} className="px-4 py-14 text-center text-slate-500">
                   <div className="flex flex-col items-center gap-2">
                     <span className="text-2xl">🔎</span>
                     <p className="text-sm font-medium">No results found</p>
@@ -163,7 +162,6 @@ export default function ResultsTable({
               places.map((place, index) => {
                 const isActive = selectedPlaceId === place.placeId;
                 const isChecked = selectedIds.has(place.placeId);
-                const statusLabel = place.openNow === true ? "OPEN" : place.openNow === false ? "CLOSED" : "N/A";
                 const mapsUrl = place.mapsUrl ?? `https://www.google.com/maps/place/?q=place_id:${place.placeId}`;
                 const phoneValue = place.phoneNumber ?? "";
                 const websiteValue = place.website ?? "";
@@ -228,21 +226,6 @@ export default function ResultsTable({
                       ) : (
                         <span className="text-slate-400">—</span>
                       )}
-                    </td>
-
-                    <td className="px-3 py-3">
-                      <span
-                        className={[
-                          "inline-flex px-2 py-1 text-xs font-semibold",
-                          statusLabel === "OPEN"
-                            ? "bg-green-100 text-green-700"
-                            : statusLabel === "CLOSED"
-                              ? "bg-red-100 text-red-700"
-                              : "bg-slate-100 text-slate-600",
-                        ].join(" ")}
-                      >
-                        {statusLabel}
-                      </span>
                     </td>
 
                     <td className="px-3 py-3 text-slate-600" title={websiteValue || undefined}>
