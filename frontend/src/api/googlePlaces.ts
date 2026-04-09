@@ -239,16 +239,14 @@ export async function getPlaceDetails(
   const PlaceClass = await createPlacesService();
   const place = new PlaceClass({ id: placeId });
 
-  const fetchFields = (
-    place as unknown as {
-      fetchFields: (request: { fields: string[] }) => Promise<unknown>;
-    }
-  ).fetchFields;
+  const placeWithFetch = place as unknown as {
+    fetchFields?: (request: { fields: string[] }) => Promise<unknown>;
+  };
 
-  if (typeof fetchFields !== "function") {
+  if (typeof placeWithFetch.fetchFields !== "function") {
     throw new Error("Place.fetchFields is unavailable in this Maps JavaScript API version.");
   }
 
-  await fetchFields({ fields: [...DETAIL_FIELDS] });
+  await placeWithFetch.fetchFields({ fields: [...DETAIL_FIELDS] });
   return toPlaceDetails(place);
 }
